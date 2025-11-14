@@ -1,0 +1,6 @@
+longsword
+greatsword
+battleaxe
+warhammer
+shield
+chain mail

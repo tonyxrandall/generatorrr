@@ -2,21 +2,50 @@ import React, { useEffect, useState } from "react";
 
 // ====== CONFIG DATA ======
 
+// All common 5e-style races & subraces + a few popular extras
 const RACES = [
+  "Any Race",
   "Human",
-  "Elf",
+  "Variant Human",
+  "Elf (High)",
+  "Elf (Wood)",
+  "Elf (Drow)",
+  "Elf (Eladrin)",
   "Half-Elf",
-  "Dwarf",
-  "Halfling",
-  "Tiefling",
+  "Dwarf (Hill)",
+  "Dwarf (Mountain)",
+  "Dwarf (Duergar)",
+  "Halfling (Lightfoot)",
+  "Halfling (Stout)",
   "Dragonborn",
+  "Gnome (Forest)",
+  "Gnome (Rock)",
   "Half-Orc",
-  "Gnome"
+  "Tiefling",
+  "Aarakocra",
+  "Aasimar",
+  "Firbolg",
+  "Genasi (Air)",
+  "Genasi (Earth)",
+  "Genasi (Fire)",
+  "Genasi (Water)",
+  "Goliath",
+  "Kenku",
+  "Kobold",
+  "Lizardfolk",
+  "Orc",
+  "Tabaxi",
+  "Triton",
+  "Tortle",
+  "Yuan-ti Pureblood"
 ];
 
 const CLASSES = [
+  "Any Class",
+  "Artificer",
   "Barbarian",
   "Bard",
+  "Blood Hunter",
   "Cleric",
   "Druid",
   "Fighter",
@@ -26,8 +55,7 @@ const CLASSES = [
   "Rogue",
   "Sorcerer",
   "Warlock",
-  "Wizard",
-  "Artificer"
+  "Wizard"
 ];
 
 const ALIGNMENTS = [
@@ -40,6 +68,14 @@ const ALIGNMENTS = [
   "Lawful Evil",
   "Neutral Evil",
   "Chaotic Evil"
+];
+
+const GENDERS = [
+  "Any",
+  "Female",
+  "Male",
+  "Non-binary",
+  "Other"
 ];
 
 const PERSONALITY_TRAITS = [
@@ -160,6 +196,7 @@ const HIT_DICE = {
   Fighter: 10,
   Paladin: 10,
   Ranger: 10,
+  Blood Hunter: 10,
   Bard: 8,
   Cleric: 8,
   Druid: 8,
@@ -185,7 +222,8 @@ const PRIMARY_STAT = {
   Sorcerer: "CHA",
   Warlock: "CHA",
   Wizard: "INT",
-  Artificer: "INT"
+  Artificer: "INT",
+  "Blood Hunter": "DEX"
 };
 
 // ====== UTILS ======
@@ -222,8 +260,25 @@ const generateBaseAbilities = () => {
   };
 };
 
-const applyRacialBonuses = (abilities, race) => {
+const normalizeRaceForBonuses = (race) => {
+  if (!race) return "";
+  if (race.includes("Human")) return "Human";
+  if (race.startsWith("Elf")) return "Elf";
+  if (race.startsWith("Dwarf")) return "Dwarf";
+  if (race.startsWith("Halfling")) return "Halfling";
+  if (race.startsWith("Gnome")) return "Gnome";
+  if (race.includes("Half-Elf")) return "Half-Elf";
+  if (race.includes("Half-Orc")) return "Half-Orc";
+  if (race.includes("Dragonborn")) return "Dragonborn";
+  if (race.includes("Tiefling")) return "Tiefling";
+  if (race.includes("Genasi")) return "Genasi";
+  return race;
+};
+
+const applyRacialBonuses = (abilities, raceRaw) => {
   const a = { ...abilities };
+  const race = normalizeRaceForBonuses(raceRaw);
+
   switch (race) {
     case "Human":
       Object.keys(a).forEach((k) => (a[k] += 1));
@@ -256,6 +311,16 @@ const applyRacialBonuses = (abilities, race) => {
       break;
     case "Gnome":
       a.INT += 2;
+      break;
+    case "Aasimar":
+      a.CHA += 2;
+      break;
+    case "Genasi":
+      a.CON += 2;
+      break;
+    case "Goliath":
+      a.STR += 2;
+      a.CON += 1;
       break;
     default:
       break;
@@ -308,6 +373,7 @@ const generateGear = (clazz) => {
     case "Fighter":
     case "Paladin":
     case "Ranger":
+    case "Blood Hunter":
       pool = GEAR_POOLS.martial;
       break;
     case "Rogue":
@@ -342,37 +408,6 @@ const generateGear = (clazz) => {
   return Array.from(chosen);
 };
 
-const generateBackstory = ({ name, race, clazz, level, alignment, hometown }) => {
-  const hooks = [
-    `${name} grew up in ${hometown}, a place now spoken of only in hushed tones.`,
-    `Once a simple child of ${hometown}, ${name} has walked a path few dare to tread.`,
-    `${name}'s early years in ${hometown} were marked by strange omens and whispered prophecies.`
-  ];
-
-  const incitingEvents = [
-    "A tragic betrayal shattered the life they once knew.",
-    "A chance encounter with a dying mentor changed their destiny forever.",
-    "An ancient relic called to them in restless dreams.",
-    "A monster attack left scars that never truly healed."
-  ];
-
-  const motivations = [
-    "Now, they seek answers in forgotten ruins and dangerous wilds.",
-    "They wander from town to town, trading skill for rumors of a looming darkness.",
-    "Their journey is driven by a quiet hope that redemption still lies ahead.",
-    "They hunger for glory, but fear becoming the very monster they fight."
-  ];
-
-  const roleFlavor = `${name} is a level ${level} ${alignment} ${race} ${clazz}, whose skills have been tempered by hardship and hard-won victories.`;
-
-  const hook = randItem(hooks);
-  const event = randItem(incitingEvents);
-  const motive = randItem(motivations);
-
-  return `${hook} ${event} ${motive} ${roleFlavor}`;
-};
-
-// Generate a flavor hometown
 const randomHometown = () =>
   randItem([
     "the misty port of Grayharbor",
@@ -384,6 +419,51 @@ const randomHometown = () =>
     "the riverside town of Whiteford"
   ]);
 
+const genderToPronouns = (gender) => {
+  switch (gender) {
+    case "Female":
+      return { subj: "she", obj: "her", poss: "her", possPron: "hers" };
+    case "Male":
+      return { subj: "he", obj: "him", poss: "his", possPron: "his" };
+    case "Non-binary":
+      return { subj: "they", obj: "them", poss: "their", possPron: "theirs" };
+    default:
+      return { subj: "they", obj: "them", poss: "their", possPron: "theirs" };
+  }
+};
+
+const generateBackstory = ({ name, race, clazz, level, alignment, hometown, gender }) => {
+  const p = genderToPronouns(gender);
+
+  const hooks = [
+    `${name} grew up in ${hometown}, a place now spoken of only in hushed tones.`,
+    `Once a simple child of ${hometown}, ${name} has walked a path few dare to tread.`,
+    `${name}'s early years in ${hometown} were marked by strange omens and whispered prophecies.`
+  ];
+
+  const incitingEvents = [
+    `A tragic betrayal shattered the life ${p.subj} once knew.`,
+    `A chance encounter with a dying mentor changed ${p.poss} destiny forever.`,
+    `An ancient relic called to ${p.obj} in restless dreams.`,
+    `A monster attack left scars on ${p.obj} that never truly healed.`
+  ];
+
+  const motivations = [
+    `Now, ${p.subj} seeks answers in forgotten ruins and dangerous wilds.`,
+    `${p.subj.charAt(0).toUpperCase() + p.subj.slice(1)} wanders from town to town, trading skill for rumors of a looming darkness.`,
+    `${p.poss.charAt(0).toUpperCase() + p.poss.slice(1)} journey is driven by a quiet hope that redemption still lies ahead.`,
+    `${p.subj.charAt(0).toUpperCase() + p.subj.slice(1)} hungers for glory, but fears becoming the very monster ${p.subj} fights.`
+  ];
+
+  const roleFlavor = `${name} is a level ${level} ${alignment} ${race} ${clazz}, whose skills have been tempered by hardship and hard-won victories.`;
+
+  const hook = randItem(hooks);
+  const event = randItem(incitingEvents);
+  const motive = randItem(motivations);
+
+  return `${hook} ${event} ${motive} ${roleFlavor}`;
+};
+
 // ====== MAIN APP ======
 
 export default function App() {
@@ -393,7 +473,13 @@ export default function App() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Load names on mount (and subtract used names from localStorage)
+  // User options
+  const [selectedGender, setSelectedGender] = useState("Any");
+  const [selectedRace, setSelectedRace] = useState("Any Race");
+  const [selectedClass, setSelectedClass] = useState("Any Class");
+  const [selectedLevel, setSelectedLevel] = useState("Random");
+
+  // Load names on mount
   useEffect(() => {
     const loadNames = async () => {
       try {
@@ -479,27 +565,43 @@ export default function App() {
     return randItem(prefixes) + randItem(suffixes);
   };
 
-  const handleGenerate = () => {
+  const resolveOptions = () => {
+    const race =
+      selectedRace === "Any Race" ? randItem(RACES.slice(1)) : selectedRace;
+    const clazz =
+      selectedClass === "Any Class" ? randItem(CLASSES.slice(1)) : selectedClass;
+    const level =
+      selectedLevel === "Random"
+        ? Math.floor(Math.random() * 20) + 1
+        : parseInt(selectedLevel, 10);
+    const gender =
+      selectedGender === "Any" ? randItem(GENDERS.slice(1)) : selectedGender;
+
+    return { race, clazz, level, gender };
+  };
+
+  const buildCharacter = ({ keepName = false } = {}) => {
     setError("");
     setBusy(true);
 
-    // Simulate “unique enough” randomness; all logic is local
     setTimeout(() => {
-      const firstName = getUniqueFirstName();
-      if (!firstName) {
-        setBusy(false);
-        return;
+      let fullName;
+      if (keepName && character) {
+        fullName = character.name;
+      } else {
+        const firstName = getUniqueFirstName();
+        if (!firstName) {
+          setBusy(false);
+          return;
+        }
+        const surname = generateSurname();
+        fullName = `${firstName} ${surname}`;
       }
-      const surname = generateSurname();
-      const fullName = `${firstName} ${surname}`;
 
-      const race = randItem(RACES);
-      const clazz = randItem(CLASSES);
-      const level = Math.floor(Math.random() * 20) + 1;
+      const { race, clazz, level, gender } = resolveOptions();
       const alignment = randItem(ALIGNMENTS);
       const hometown = randomHometown();
 
-      // Abilities
       const baseAbilities = generateBaseAbilities();
       const racialAbilities = applyRacialBonuses(baseAbilities, race);
       const finalAbilities = applyASI(racialAbilities, clazz, level);
@@ -523,11 +625,13 @@ export default function App() {
         clazz,
         level,
         alignment,
-        hometown
+        hometown,
+        gender
       });
 
       const newCharacter = {
         name: fullName,
+        gender,
         race,
         clazz,
         level,
@@ -544,171 +648,348 @@ export default function App() {
 
       setCharacter(newCharacter);
       setBusy(false);
-    }, 300); // tiny delay for UI feel
+    }, 250);
+  };
+
+  const handleFullyRandom = () => {
+    // Temporarily ignore user filters by randomizing them all
+    const randomRace = randItem(RACES.slice(1));
+    const randomClass = randItem(CLASSES.slice(1));
+    const randomGender = randItem(GENDERS.slice(1));
+    const randomLevel = (Math.floor(Math.random() * 20) + 1).toString();
+
+    setSelectedRace(randomRace);
+    setSelectedClass(randomClass);
+    setSelectedGender(randomGender);
+    setSelectedLevel(randomLevel);
+    buildCharacter();
+  };
+
+  const handleUseSettings = () => {
+    buildCharacter();
+  };
+
+  const handleRerollKeepingName = () => {
+    if (!character) return;
+    buildCharacter({ keepName: true });
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
-      <div className="max-w-4xl w-full bg-slate-800/80 border border-slate-700 rounded-2xl shadow-xl p-6 md:p-8">
-        <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-amber-300 tracking-wide">
-              Arcane Character Forge
-            </h1>
-            <p className="text-sm md:text-base text-slate-300 mt-1">
-              Generate completely random, non-repeating D&D characters with
-              stats, traits, gear, and a short backstory.
-            </p>
-          </div>
-          <button
-            onClick={handleGenerate}
-            disabled={loadingNames || busy}
-            className={`px-4 py-2 rounded-lg text-sm md:text-base font-semibold transition
-              ${
-                loadingNames || busy
-                  ? "bg-slate-600 cursor-not-allowed"
-                  : "bg-amber-400 hover:bg-amber-300 text-slate-900"
-              }`}
-          >
-            {loadingNames
-              ? "Loading names..."
-              : busy
-              ? "Conjuring character..."
-              : "Generate Character"}
-          </button>
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center p-4">
+      <div className="max-w-6xl w-full">
+        {/* Header */}
+        <header className="mb-6 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-wide text-amber-300 drop-shadow-md">
+            The Guild Scribe&apos;s Character Scroll
+          </h1>
+          <p className="mt-2 text-sm md:text-base text-slate-300">
+            A minimalist D&D name & character generator. Each hero is forged from a
+            unique name, accurate stats, and a short tale of adventure.
+          </p>
         </header>
 
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-red-900/40 border border-red-600 text-sm">
-            {error}
-          </div>
-        )}
+        <div className="grid gap-4 md:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
+          {/* Left: Control panel on a scroll */}
+          <section className="relative">
+            <div className="absolute -top-3 left-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
+            <div className="absolute -top-3 right-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
 
-        {!character && !error && !loadingNames && (
-          <p className="text-sm text-slate-300 mb-4">
-            Click <span className="font-semibold">Generate Character</span> to
-            create a unique hero. First names are consumed from{" "}
-            <code className="bg-slate-900 px-1 py-0.5 rounded">
-              names-extra.txt
-            </code>{" "}
-            and never reused in this browser.
-          </p>
-        )}
+            <div className="bg-gradient-to-b from-amber-100/90 via-amber-50/95 to-amber-100/90 text-slate-900 border border-amber-500/70 rounded-xl shadow-xl shadow-amber-900/30 px-4 py-5 md:px-5 md:py-6 relative overflow-hidden">
+              <div className="absolute inset-x-6 top-0 h-1 border-b border-amber-700/50" />
+              <div className="absolute inset-x-4 bottom-0 h-1 border-t border-amber-700/40" />
+              <div className="absolute inset-y-4 left-2 w-px bg-amber-700/40" />
+              <div className="absolute inset-y-4 right-2 w-px bg-amber-700/40" />
 
-        {character && (
-          <main className="space-y-6">
-            {/* Identity */}
-            <section className="bg-slate-900/60 rounded-xl border border-slate-700 p-4 md:p-5">
-              <h2 className="text-lg font-semibold text-amber-200 mb-2">
-                {character.name}
+              <h2 className="relative text-lg font-semibold text-amber-900 mb-3">
+                Summoning Ritual
               </h2>
-              <div className="text-sm md:text-base text-slate-200 space-y-1">
-                <p>
-                  <span className="font-semibold">Race:</span> {character.race}
-                </p>
-                <p>
-                  <span className="font-semibold">Class:</span>{" "}
-                  {character.clazz}
-                </p>
-                <p>
-                  <span className="font-semibold">Level:</span>{" "}
-                  {character.level}
-                </p>
-                <p>
-                  <span className="font-semibold">Alignment:</span>{" "}
-                  {character.alignment}
-                </p>
-                <p>
-                  <span className="font-semibold">Hometown:</span>{" "}
-                  {character.hometown}
-                </p>
-              </div>
-            </section>
 
-            {/* Stats */}
-            <section className="bg-slate-900/60 rounded-xl border border-slate-700 p-4 md:p-5">
-              <h3 className="text-md font-semibold text-amber-200 mb-3">
-                Ability Scores & Combat
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm md:text-base mb-3">
-                {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
-                  <div
-                    key={stat}
-                    className="bg-slate-800/80 rounded-lg px-3 py-2 flex items-center justify-between"
+              {error && (
+                <div className="relative mb-3 rounded-lg border border-red-500/70 bg-red-50/90 px-3 py-2 text-xs text-red-900">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-3 text-xs md:text-sm relative">
+                {/* Gender */}
+                <div className="flex flex-col gap-1">
+                  <label className="font-semibold text-amber-900/90">
+                    Gender
+                  </label>
+                  <select
+                    value={selectedGender}
+                    onChange={(e) => setSelectedGender(e.target.value)}
+                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
                   >
-                    <span className="font-semibold">{stat}</span>
-                    <span>
-                      {character.abilities[stat]}{" "}
-                      <span className="text-xs text-slate-300">
-                        ({formatMod(character.mods[stat])})
+                    {GENDERS.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Race */}
+                <div className="flex flex-col gap-1">
+                  <label className="font-semibold text-amber-900/90">
+                    Race
+                  </label>
+                  <select
+                    value={selectedRace}
+                    onChange={(e) => setSelectedRace(e.target.value)}
+                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                  >
+                    {RACES.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Class */}
+                <div className="flex flex-col gap-1">
+                  <label className="font-semibold text-amber-900/90">
+                    Class
+                  </label>
+                  <select
+                    value={selectedClass}
+                    onChange={(e) => setSelectedClass(e.target.value)}
+                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                  >
+                    {CLASSES.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Level */}
+                <div className="flex flex-col gap-1">
+                  <label className="font-semibold text-amber-900/90 flex items-center justify-between">
+                    <span>Level</span>
+                    {selectedLevel !== "Random" && (
+                      <span className="text-[10px] md:text-xs text-amber-800/80">
+                        {selectedLevel}
                       </span>
+                    )}
+                  </label>
+                  <div className="flex gap-2 items-center">
+                    <select
+                      value={selectedLevel}
+                      onChange={(e) => setSelectedLevel(e.target.value)}
+                      className="w-24 rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                    >
+                      <option value="Random">Random (1–20)</option>
+                      {Array.from({ length: 20 }).map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="text-[10px] md:text-xs text-amber-800/80">
+                      Higher levels gain ASIs and more HP.
                     </span>
                   </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-4 text-sm md:text-base">
-                <div>
-                  <span className="font-semibold">HP:</span>{" "}
-                  {character.hp}
                 </div>
-                <div>
-                  <span className="font-semibold">Proficiency Bonus:</span>{" "}
-                  {formatMod(character.proficiencyBonus)}
+
+                {/* Buttons */}
+                <div className="pt-2 border-t border-amber-400/60 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={handleFullyRandom}
+                    disabled={loadingNames || busy}
+                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold tracking-wide uppercase
+                      ${
+                        loadingNames || busy
+                          ? "bg-amber-300/70 text-amber-900/60 cursor-not-allowed"
+                          : "bg-amber-600 text-amber-50 hover:bg-amber-500 shadow-md shadow-amber-900/40"
+                      }`}
+                  >
+                    {loadingNames
+                      ? "Loading Names..."
+                      : busy
+                      ? "Conjuring Hero..."
+                      : "Fully Random Hero"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleUseSettings}
+                    disabled={loadingNames || busy}
+                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold
+                      ${
+                        loadingNames || busy
+                          ? "bg-amber-200/80 text-amber-900/60 cursor-not-allowed"
+                          : "bg-amber-100/90 text-amber-900 border border-amber-400/80 hover:bg-amber-50"
+                      }`}
+                  >
+                    Use My Settings
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleRerollKeepingName}
+                    disabled={!character || busy}
+                    className={`w-full rounded-md px-3 py-1.5 text-[11px] md:text-xs font-medium
+                      ${
+                        !character || busy
+                          ? "bg-amber-50/60 text-amber-900/40 cursor-not-allowed"
+                          : "bg-transparent border border-amber-400/70 text-amber-900 hover:bg-amber-100/80"
+                      }`}
+                  >
+                    Re-roll Stats & Story (Keep Name)
+                  </button>
                 </div>
-                {/* You can add AC, initiative, etc. if you want */}
-              </div>
-            </section>
 
-            {/* Traits */}
-            <section className="bg-slate-900/60 rounded-xl border border-slate-700 p-4 md:p-5">
-              <h3 className="text-md font-semibold text-amber-200 mb-3">
-                Traits
-              </h3>
-              <div className="space-y-2 text-sm md:text-base">
-                <p>
-                  <span className="font-semibold">Personality:</span>{" "}
-                  {character.traits.personality}
-                </p>
-                <p>
-                  <span className="font-semibold">Ideal:</span>{" "}
-                  {character.traits.ideal}
-                </p>
-                <p>
-                  <span className="font-semibold">Bond:</span>{" "}
-                  {character.traits.bond}
-                </p>
-                <p>
-                  <span className="font-semibold">Flaw:</span>{" "}
-                  {character.traits.flaw}
+                <p className="text-[10px] md:text-xs text-amber-800/80 pt-1">
+                  Each first name is consumed from <code>names-extra.txt</code>{" "}
+                  and never reused in this browser, keeping every hero distinct.
                 </p>
               </div>
-            </section>
+            </div>
+          </section>
 
-            {/* Gear */}
-            <section className="bg-slate-900/60 rounded-xl border border-slate-700 p-4 md:p-5">
-              <h3 className="text-md font-semibold text-amber-200 mb-3">
-                Starting Gear
-              </h3>
-              <ul className="list-disc list-inside text-sm md:text-base space-y-1">
-                {character.gear.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
-            </section>
+          {/* Right: Character sheet card */}
+          <section className="bg-slate-900/70 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/60 backdrop-blur-sm p-4 md:p-6">
+            {!character ? (
+              <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-slate-300">
+                Use the scroll to the left to summon your first hero.
+              </div>
+            ) : (
+              <div className="space-y-5">
+                {/* Identity */}
+                <div className="border-b border-slate-700 pb-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 className="text-2xl md:text-3xl font-bold text-amber-200">
+                      {character.name}
+                    </h2>
+                    <span className="text-xs md:text-sm uppercase tracking-wide text-amber-400">
+                      Level {character.level} {character.race} {character.clazz}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-xs md:text-sm text-slate-300 flex flex-wrap gap-x-4 gap-y-1">
+                    <span>
+                      <span className="font-semibold text-slate-100">Gender:</span>{" "}
+                      {character.gender}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-slate-100">Alignment:</span>{" "}
+                      {character.alignment}
+                    </span>
+                    <span>
+                      <span className="font-semibold text-slate-100">Hometown:</span>{" "}
+                      {character.hometown}
+                    </span>
+                  </div>
+                </div>
 
-            {/* Backstory */}
-            <section className="bg-slate-900/60 rounded-xl border border-slate-700 p-4 md:p-5">
-              <h3 className="text-md font-semibold text-amber-200 mb-3">
-                Backstory
-              </h3>
-              <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                {character.backstory}
-              </p>
-            </section>
-          </main>
-        )}
+                {/* Stats & combat */}
+                <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4">
+                  <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
+                    <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                      Ability Scores
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 text-xs md:text-sm">
+                      {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
+                        <div
+                          key={stat}
+                          className="bg-slate-800/80 rounded-lg px-2.5 py-2 flex flex-col items-center justify-center border border-slate-700/80"
+                        >
+                          <span className="text-[11px] font-semibold text-slate-300">
+                            {stat}
+                          </span>
+                          <span className="text-sm md:text-base font-bold text-amber-100">
+                            {character.abilities[stat]}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {formatMod(character.mods[stat])}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                        Combat Summary
+                      </h3>
+                      <div className="space-y-1 text-xs md:text-sm text-slate-200">
+                        <p>
+                          <span className="font-semibold">Hit Points:</span>{" "}
+                          {character.hp}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Proficiency Bonus:</span>{" "}
+                          {formatMod(character.proficiencyBonus)}
+                        </p>
+                        <p className="text-slate-400 text-[11px] md:text-xs">
+                          HP and proficiency are calculated from class, level, and
+                          Constitution modifier using standard 5e-style rules
+                          (max at 1st, average thereafter).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Traits */}
+                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
+                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                    Traits
+                  </h3>
+                  <div className="space-y-1 text-xs md:text-sm text-slate-200">
+                    <p>
+                      <span className="font-semibold text-slate-100">
+                        Personality:
+                      </span>{" "}
+                      {character.traits.personality}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-100">
+                        Ideal:
+                      </span>{" "}
+                      {character.traits.ideal}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-100">Bond:</span>{" "}
+                      {character.traits.bond}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-slate-100">Flaw:</span>{" "}
+                      {character.traits.flaw}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Gear */}
+                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
+                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                    Starting Gear
+                  </h3>
+                  <ul className="list-disc list-inside text-xs md:text-sm text-slate-200 space-y-0.5">
+                    {character.gear.map((item, idx) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Backstory */}
+                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
+                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                    Backstory
+                  </h3>
+                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
+                    {character.backstory}
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
 }
-// Paste your App.jsx code here

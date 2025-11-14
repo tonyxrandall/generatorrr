@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-// ====== CONFIG DATA ======
+// ====== CONFIG DATA (FALLBACKS) ======
 
-// All common 5e-style races & subraces + a few popular extras
+// Races & classes (with "Any" options)
 const RACES = [
   "Any Race",
   "Human",
@@ -70,62 +70,174 @@ const ALIGNMENTS = [
   "Chaotic Evil"
 ];
 
-const GENDERS = [
-  "Any",
-  "Female",
-  "Male",
-  "Non-binary",
-  "Other"
+const GENDERS = ["Any", "Female", "Male", "Non-binary", "Other"];
+
+// Fallback backstory pools
+const FALLBACK_ADJECTIVES = [
+  "stoic",
+  "reckless",
+  "brooding",
+  "soft-spoken",
+  "quick-witted",
+  "superstitious",
+  "vengeful",
+  "hopeful"
 ];
 
-const PERSONALITY_TRAITS = [
-  "Always quick with a joke, even in dire situations.",
-  "Keeps a meticulous journal of every encounter.",
-  "Trusts animals more than people.",
-  "Sees omens and signs in everyday events.",
-  "Collects small trinkets from every place they visit.",
-  "Never backs down from a challenge.",
-  "Has an infectious, booming laugh.",
-  "Speaks in a soft whisper, even when angry.",
-  "Always offers help to strangers.",
-  "Is obsessed with discovering forgotten lore."
+const FALLBACK_LIFE_EVENTS = [
+  "survived a dragon attack",
+  "lost their mentor in a mysterious fire",
+  "discovered an ancient ruin",
+  "escaped captivity from a shadow cult",
+  "witnessed forbidden magic"
 ];
 
-const IDEALS = [
-  "Freedom. Chains are meant to be broken.",
-  "Knowledge. The path to power lies in understanding.",
-  "Justice. The guilty must face consequences.",
-  "Glory. I will carve my name into history.",
-  "Compassion. No one deserves to suffer alone.",
-  "Balance. Nature and civilization must coexist.",
-  "Redemption. Anyone can be forgiven… maybe even me.",
-  "Power. Only the strong decide what is right."
+const FALLBACK_VILLAINS = [
+  "a shadow cult",
+  "an exiled warlock",
+  "a corrupted noble",
+  "a rampaging dragon",
+  "a rogue artificer"
 ];
 
-const BONDS = [
-  "Sworn to protect a particular village or town.",
-  "Owes a life debt to a mysterious stranger.",
-  "Seeks the truth about a lost relative.",
-  "Is bound to an ancient artifact they barely understand.",
-  "Defends a nearly forgotten temple.",
-  "Promised to return a keepsake to its rightful heir.",
-  "Haunted by a ghost that only they can see.",
-  "Member of a secretive order with hidden goals."
+const FALLBACK_PROFESSIONS = [
+  "apprentice blacksmith",
+  "street-level fortune teller",
+  "wandering minstrel",
+  "temple archivist",
+  "failed squire",
+  "runaway noble"
 ];
 
-const FLAWS = [
-  "Gambles recklessly and hides the habit.",
-  "Holds grudges far longer than they should.",
-  "Can’t resist showing off, even when subtlety is needed.",
-  "Terrified of deep water.",
-  "Quick to anger when questioned or doubted.",
-  "Trusts the wrong people far too easily.",
-  "Is secretly convinced they are doomed to fail.",
-  "Has a hard time refusing a plea for help, even when it’s a trap."
+const FALLBACK_MOTIVATIONS = [
+  "seek redemption",
+  "uncover forbidden secrets",
+  "restore their family honor",
+  "avenge past wrongs",
+  "stop an incoming catastrophe"
 ];
 
-// Rough, flavorful gear pools by class archetype
-const GEAR_POOLS = {
+const FALLBACK_MAGICAL_EFFECTS = [
+  "glows faintly during moonlight",
+  "whispers fragments of forgotten runes",
+  "emits sparks when danger is near",
+  "grows cold in the presence of evil",
+  "hums softly when a spell is cast"
+];
+
+// Fallback backstory templates (single template used per character)
+const FALLBACK_TEMPLATES = [
+  `{name} was a {adjective} {race} {clazz} from {hometown}, once known only as a humble {profession}. 
+Long before {p_subj} reached level {level}, {p_subj} {lifeEvent}, leaving {p_obj} forever changed. 
+Since then, {p_subj} has wandered the realm to {motivation}, with rumors whispering that {p_poss} gear sometimes {magicalEffect}. 
+Now, as a {alignment} soul, {name} walks a path few dare to follow.`,
+  `In the quiet days of {hometown}, {name} lived as a {profession}, a life too small for a {adjective} spirit. 
+Everything shifted when {p_subj} {lifeEvent}, drawing the ire of {villain}. 
+Taking up the mantle of a level {level} {race} {clazz}, {name} set out to {motivation}, even as {p_poss} shadowed past clings tightly to {p_possPron}.`,
+  `{name} was never meant to be ordinary. Born in {hometown} and known as a {profession}, 
+{p_subj} carried a {adjective} determination that others overlooked. 
+After {p_subj} {lifeEvent}, the road ahead bent sharply toward danger and destiny. 
+Now a level {level} {race} {clazz}, {name} seeks to {motivation}, while whispers claim that something {magicalEffect} surrounds {p_obj} whenever steel and sorcery clash.`
+];
+
+// Fallback surnames
+const FALLBACK_SURNAME_PREFIXES = [
+  "Storm",
+  "Shadow",
+  "Iron",
+  "Dawn",
+  "Night",
+  "Bright",
+  "Raven",
+  "Silver",
+  "Blood",
+  "Star",
+  "Wind",
+  "Stone",
+  "Oak",
+  "Ash"
+];
+
+const FALLBACK_SURNAME_SUFFIXES = [
+  "born",
+  "song",
+  "blade",
+  "walker",
+  "ward",
+  "bane",
+  "weaver",
+  "crest",
+  "run",
+  "fall",
+  "brook",
+  "stride"
+];
+
+const FALLBACK_SURNAME_NATURAL = [
+  "Riverbrook",
+  "Thornweave",
+  "Mossbriar",
+  "Hillford",
+  "Oakborne",
+  "Greenmantle",
+  "Briarcrest"
+];
+
+const FALLBACK_SURNAME_ELEMENTAL = [
+  "Flamewhisper",
+  "Stormwatcher",
+  "Frostmantle",
+  "Stonebreaker",
+  "Windshadow",
+  "Emberfield"
+];
+
+const FALLBACK_SURNAME_NOBLE = [
+  "the Third",
+  "of Highcourt",
+  "the Unbroken",
+  "of Dawnspire",
+  "of Blackstone Keep"
+];
+
+// Hit dice by class
+const HIT_DICE = {
+  Barbarian: 12,
+  Fighter: 10,
+  Paladin: 10,
+  Ranger: 10,
+  "Blood Hunter": 10,
+  Bard: 8,
+  Cleric: 8,
+  Druid: 8,
+  Monk: 8,
+  Rogue: 8,
+  Warlock: 8,
+  Artificer: 8,
+  Sorcerer: 6,
+  Wizard: 6
+};
+
+// Primary stat by class
+const PRIMARY_STAT = {
+  Barbarian: "STR",
+  Bard: "CHA",
+  Cleric: "WIS",
+  Druid: "WIS",
+  Fighter: "STR",
+  Monk: "DEX",
+  Paladin: "STR",
+  Ranger: "DEX",
+  Rogue: "DEX",
+  Sorcerer: "CHA",
+  Warlock: "CHA",
+  Wizard: "INT",
+  Artificer: "INT",
+  "Blood Hunter": "DEX"
+};
+
+// Gear fallback pools (used if external files are missing)
+const FALLBACK_GEAR = {
   martial: [
     "longsword",
     "greatsword",
@@ -141,7 +253,7 @@ const GEAR_POOLS = {
     "inscribed family crest",
     "trophy taken from a fallen foe"
   ],
-  stealthy: [
+  stealth: [
     "shortsword",
     "daggers",
     "shortbow with arrows",
@@ -187,48 +299,21 @@ const GEAR_POOLS = {
     "cloak smelling faintly of pine",
     "animal-bone necklace",
     "small carved wooden animal"
+  ],
+  trinkets: [
+    "lucky coin",
+    "feather charm",
+    "broken compass",
+    "engraved locket"
   ]
 };
 
-// Hit dice by class
-const HIT_DICE = {
-  Barbarian: 12,
-  Fighter: 10,
-  Paladin: 10,
-  Ranger: 10,
-  "Blood Hunter": 10,
-  Bard: 8,
-  Cleric: 8,
-  Druid: 8,
-  Monk: 8,
-  Rogue: 8,
-  Warlock: 8,
-  Artificer: 8,
-  Sorcerer: 6,
-  Wizard: 6
-};
+// ====== UTILITIES ======
 
-// Primary stat by class
-const PRIMARY_STAT = {
-  Barbarian: "STR",
-  Bard: "CHA",
-  Cleric: "WIS",
-  Druid: "WIS",
-  Fighter: "STR",
-  Monk: "DEX",
-  Paladin: "STR",
-  Ranger: "DEX",
-  Rogue: "DEX",
-  Sorcerer: "CHA",
-  Warlock: "CHA",
-  Wizard: "INT",
-  Artificer: "INT",
-  "Blood Hunter": "DEX"
-};
-
-// ====== UTILS ======
-
-const randItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const randItem = (arr) =>
+  arr && arr.length > 0
+    ? arr[Math.floor(Math.random() * arr.length)]
+    : undefined;
 
 const abilityMod = (score) => Math.floor((score - 10) / 2);
 
@@ -246,19 +331,17 @@ const rollD = (sides) => Math.floor(Math.random() * sides) + 1;
 
 const roll4d6DropLowest = () => {
   const rolls = [rollD(6), rollD(6), rollD(6), rollD(6)].sort((a, b) => a - b);
-  return rolls.slice(1).reduce((a, b) => a + b, 0); // drop lowest
+  return rolls.slice(1).reduce((a, b) => a + b, 0);
 };
 
-const generateBaseAbilities = () => {
-  return {
-    STR: roll4d6DropLowest(),
-    DEX: roll4d6DropLowest(),
-    CON: roll4d6DropLowest(),
-    INT: roll4d6DropLowest(),
-    WIS: roll4d6DropLowest(),
-    CHA: roll4d6DropLowest()
-  };
-};
+const generateBaseAbilities = () => ({
+  STR: roll4d6DropLowest(),
+  DEX: roll4d6DropLowest(),
+  CON: roll4d6DropLowest(),
+  INT: roll4d6DropLowest(),
+  WIS: roll4d6DropLowest(),
+  CHA: roll4d6DropLowest()
+});
 
 const normalizeRaceForBonuses = (race) => {
   if (!race) return "";
@@ -340,7 +423,6 @@ const applyASI = (abilities, clazz, level) => {
     if (result[primary] < 20) {
       result[primary] += 2;
     } else {
-      // If primary capped, boost highest other stat
       const otherKeys = Object.keys(result).filter((k) => k !== primary);
       const highestOther = otherKeys.reduce((best, cur) =>
         result[cur] > result[best] ? cur : best
@@ -356,56 +438,12 @@ const applyASI = (abilities, clazz, level) => {
 
 const calculateHP = (clazz, level, conMod) => {
   const hitDie = HIT_DICE[clazz] || 8;
-  if (level <= 0) return hitDie + conMod;
-
   const firstLevel = hitDie + conMod;
-  if (level === 1) return Math.max(1, firstLevel);
+  if (level <= 1) return Math.max(1, firstLevel);
 
   const avgPerLevel = Math.floor(hitDie / 2) + 1 + conMod;
   const total = firstLevel + (level - 1) * avgPerLevel;
   return Math.max(1, total);
-};
-
-const generateGear = (clazz) => {
-  let pool;
-  switch (clazz) {
-    case "Barbarian":
-    case "Fighter":
-    case "Paladin":
-    case "Ranger":
-    case "Blood Hunter":
-      pool = GEAR_POOLS.martial;
-      break;
-    case "Rogue":
-    case "Monk":
-      pool = GEAR_POOLS.stealthy;
-      break;
-    case "Wizard":
-    case "Sorcerer":
-    case "Warlock":
-    case "Artificer":
-      pool = GEAR_POOLS.caster;
-      break;
-    case "Cleric":
-      pool = GEAR_POOLS.divine;
-      break;
-    case "Druid":
-      pool = GEAR_POOLS.nature;
-      break;
-    case "Bard":
-      // Bard is a hybrid: caster + stealthy
-      pool = [...GEAR_POOLS.caster, ...GEAR_POOLS.stealthy];
-      break;
-    default:
-      pool = [...GEAR_POOLS.martial];
-  }
-
-  const gearCount = 5 + Math.floor(Math.random() * 4); // 5–8 items
-  const chosen = new Set();
-  while (chosen.size < gearCount) {
-    chosen.add(randItem(pool));
-  }
-  return Array.from(chosen);
 };
 
 const randomHometown = () =>
@@ -426,49 +464,261 @@ const genderToPronouns = (gender) => {
     case "Male":
       return { subj: "he", obj: "him", poss: "his", possPron: "his" };
     case "Non-binary":
-      return { subj: "they", obj: "them", poss: "their", possPron: "theirs" };
+      return {
+        subj: "they",
+        obj: "them",
+        poss: "their",
+        possPron: "theirs"
+      };
     default:
-      return { subj: "they", obj: "them", poss: "their", possPron: "theirs" };
+      return {
+        subj: "they",
+        obj: "them",
+        poss: "their",
+        possPron: "theirs"
+      };
   }
 };
 
-const generateBackstory = ({ name, race, clazz, level, alignment, hometown, gender }) => {
-  const p = genderToPronouns(gender);
-
-  const hooks = [
-    `${name} grew up in ${hometown}, a place now spoken of only in hushed tones.`,
-    `Once a simple child of ${hometown}, ${name} has walked a path few dare to tread.`,
-    `${name}'s early years in ${hometown} were marked by strange omens and whispered prophecies.`
-  ];
-
-  const incitingEvents = [
-    `A tragic betrayal shattered the life ${p.subj} once knew.`,
-    `A chance encounter with a dying mentor changed ${p.poss} destiny forever.`,
-    `An ancient relic called to ${p.obj} in restless dreams.`,
-    `A monster attack left scars on ${p.obj} that never truly healed.`
-  ];
-
-  const motivations = [
-    `Now, ${p.subj} seeks answers in forgotten ruins and dangerous wilds.`,
-    `${p.subj.charAt(0).toUpperCase() + p.subj.slice(1)} wanders from town to town, trading skill for rumors of a looming darkness.`,
-    `${p.poss.charAt(0).toUpperCase() + p.poss.slice(1)} journey is driven by a quiet hope that redemption still lies ahead.`,
-    `${p.subj.charAt(0).toUpperCase() + p.subj.slice(1)} hungers for glory, but fears becoming the very monster ${p.subj} fights.`
-  ];
-
-  const roleFlavor = `${name} is a level ${level} ${alignment} ${race} ${clazz}, whose skills have been tempered by hardship and hard-won victories.`;
-
-  const hook = randItem(hooks);
-  const event = randItem(incitingEvents);
-  const motive = randItem(motivations);
-
-  return `${hook} ${event} ${motive} ${roleFlavor}`;
+// Generic helper: load lines from a public file
+const loadTextLines = async (path) => {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return [];
+    const text = await res.text();
+    return text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
 };
 
-// ====== MAIN APP ======
+// Pick from external pool or fallback
+const pickFromPool = (external, fallback) => {
+  const source =
+    external && external.length > 0 ? external : fallback && fallback.length > 0 ? fallback : [];
+  return source.length ? randItem(source) : "";
+};
+
+// ====== BACKSTORY & GEAR BUILDERS ======
+
+const generateSurname = (
+  ctx,
+  surnamePools
+) => {
+  const {
+    surnamePrefixes,
+    surnameSuffixes,
+    surnameNatural,
+    surnameElemental,
+    surnameNoble
+  } = surnamePools;
+
+  const prefixes = surnamePrefixes.length
+    ? surnamePrefixes
+    : FALLBACK_SURNAME_PREFIXES;
+  const suffixes = surnameSuffixes.length
+    ? surnameSuffixes
+    : FALLBACK_SURNAME_SUFFIXES;
+  const natural = surnameNatural.length
+    ? surnameNatural
+    : FALLBACK_SURNAME_NATURAL;
+  const elemental = surnameElemental.length
+    ? surnameElemental
+    : FALLBACK_SURNAME_ELEMENTAL;
+  const noblePieces = surnameNoble.length
+    ? surnameNoble
+    : FALLBACK_SURNAME_NOBLE;
+
+  const methods = ["natural", "elemental", "composite", "noble", "origin"];
+  const method = randItem(methods);
+
+  switch (method) {
+    case "natural":
+      return randItem(natural);
+    case "elemental":
+      return randItem(elemental);
+    case "noble": {
+      const base = randItem([...natural, ...elemental, ...prefixes]);
+      const title = randItem(noblePieces);
+      return `${base} ${title}`;
+    }
+    case "origin":
+      if (ctx.hometown) {
+        const townName = ctx.hometown
+          .replace("the ", "")
+          .replace("city of ", "")
+          .replace("village of ", "")
+          .split(" ")[0];
+        return `${townName}born`;
+      }
+      // fallthrough to composite
+    case "composite":
+    default: {
+      const pre = randItem(prefixes);
+      const suf = randItem(suffixes);
+      return pre + suf;
+    }
+  }
+};
+
+const generateGear = (clazz, gearPools, magicalEffects) => {
+  const pickPool = (external, fallbackKey) => {
+    const fallback = FALLBACK_GEAR[fallbackKey] || [];
+    return external && external.length ? external : fallback;
+  };
+
+  let basePoolKey = "martial";
+  switch (clazz) {
+    case "Barbarian":
+    case "Fighter":
+    case "Paladin":
+    case "Ranger":
+    case "Blood Hunter":
+      basePoolKey = "martial";
+      break;
+    case "Rogue":
+    case "Monk":
+      basePoolKey = "stealth";
+      break;
+    case "Wizard":
+    case "Sorcerer":
+    case "Warlock":
+    case "Artificer":
+      basePoolKey = "caster";
+      break;
+    case "Cleric":
+      basePoolKey = "divine";
+      break;
+    case "Druid":
+      basePoolKey = "nature";
+      break;
+    case "Bard":
+      basePoolKey = "caster";
+      break;
+    default:
+      basePoolKey = "martial";
+  }
+
+  const martial = pickPool(gearPools.martial, "martial");
+  const stealth = pickPool(gearPools.stealth, "stealth");
+  const caster = pickPool(gearPools.caster, "caster");
+  const divine = pickPool(gearPools.divine, "divine");
+  const nature = pickPool(gearPools.nature, "nature");
+  const trinkets = pickPool(gearPools.trinkets, "trinkets");
+
+  let classPool = martial;
+  if (basePoolKey === "stealth") classPool = stealth;
+  if (basePoolKey === "caster") classPool = caster;
+  if (basePoolKey === "divine") classPool = divine;
+  if (basePoolKey === "nature") classPool = nature;
+
+  const gearSet = new Set();
+  const mainCount = 3 + Math.floor(Math.random() * 2); // 3–4
+  while (gearSet.size < mainCount && classPool.length) {
+    gearSet.add(randItem(classPool));
+  }
+
+  const trinketCount = 1 + Math.floor(Math.random() * 2); // 1–2
+  while (gearSet.size < mainCount + trinketCount && trinkets.length) {
+    gearSet.add(randItem(trinkets));
+  }
+
+  const mixedPool = [
+    ...martial,
+    ...caster,
+    ...stealth,
+    ...divine,
+    ...nature,
+    ...trinkets
+  ];
+  if (mixedPool.length) {
+    gearSet.add(randItem(mixedPool));
+  }
+
+  const gear = Array.from(gearSet);
+
+  const effectSource =
+    magicalEffects && magicalEffects.length
+      ? magicalEffects
+      : FALLBACK_MAGICAL_EFFECTS;
+  if (gear.length && effectSource.length) {
+    const idx = Math.floor(Math.random() * gear.length);
+    const effect = randItem(effectSource);
+    gear[idx] = `${gear[idx]} (which sometimes ${effect})`;
+  }
+
+  return gear;
+};
+
+const buildBackstory = (context, pools) => {
+  const {
+    adjectives,
+    lifeEvents,
+    villains,
+    professions,
+    motivations,
+    magicalEffects,
+    templates
+  } = pools;
+
+  const adjectivesSrc = adjectives.length ? adjectives : FALLBACK_ADJECTIVES;
+  const lifeEventsSrc = lifeEvents.length ? lifeEvents : FALLBACK_LIFE_EVENTS;
+  const villainsSrc = villains.length ? villains : FALLBACK_VILLAINS;
+  const professionsSrc = professions.length
+    ? professions
+    : FALLBACK_PROFESSIONS;
+  const motivationsSrc = motivations.length
+    ? motivations
+    : FALLBACK_MOTIVATIONS;
+  const magicalSrc = magicalEffects.length
+    ? magicalEffects
+    : FALLBACK_MAGICAL_EFFECTS;
+
+  const templatesSrc = templates.length ? templates : FALLBACK_TEMPLATES;
+  const template = randItem(templatesSrc);
+
+  const pronouns = genderToPronouns(context.gender);
+  const p_subj = pronouns.subj;
+  const p_obj = pronouns.obj;
+  const p_poss = pronouns.poss;
+  const p_possPron = pronouns.possPron;
+  const p_subj_cap = p_subj.charAt(0).toUpperCase() + p_subj.slice(1);
+
+  const replacements = {
+    name: context.name,
+    race: context.race,
+    clazz: context.clazz,
+    level: String(context.level),
+    gender: context.gender,
+    hometown: context.hometown,
+    alignment: context.alignment,
+
+    profession: randItem(professionsSrc),
+    lifeEvent: randItem(lifeEventsSrc),
+    motivation: randItem(motivationsSrc),
+    villain: randItem(villainsSrc),
+    adjective: randItem(adjectivesSrc),
+    magicalEffect: randItem(magicalSrc),
+
+    p_subj,
+    p_obj,
+    p_poss,
+    p_possPron,
+    p_subj_cap
+  };
+
+  return template.replace(/\{(\w+)\}/g, (_, key) => replacements[key] || "");
+};
+
+// ====== MAIN APP COMPONENT ======
 
 export default function App() {
   const [namesPool, setNamesPool] = useState([]);
   const [loadingNames, setLoadingNames] = useState(true);
+  const [loadingRandomData, setLoadingRandomData] = useState(true);
   const [character, setCharacter] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -479,7 +729,29 @@ export default function App() {
   const [selectedClass, setSelectedClass] = useState("Any Class");
   const [selectedLevel, setSelectedLevel] = useState("Random");
 
-  // Load names on mount
+  // External random data pools
+  const [adjectives, setAdjectives] = useState([]);
+  const [lifeEvents, setLifeEvents] = useState([]);
+  const [villains, setVillains] = useState([]);
+  const [professions, setProfessions] = useState([]);
+  const [motivations, setMotivations] = useState([]);
+  const [magicalEffects, setMagicalEffects] = useState([]);
+  const [templates, setTemplates] = useState([]);
+
+  const [surnamePrefixes, setSurnamePrefixes] = useState([]);
+  const [surnameSuffixes, setSurnameSuffixes] = useState([]);
+  const [surnameNatural, setSurnameNatural] = useState([]);
+  const [surnameElemental, setSurnameElemental] = useState([]);
+  const [surnameNoble, setSurnameNoble] = useState([]);
+
+  const [gearMartial, setGearMartial] = useState([]);
+  const [gearCaster, setGearCaster] = useState([]);
+  const [gearStealth, setGearStealth] = useState([]);
+  const [gearDivine, setGearDivine] = useState([]);
+  const [gearNature, setGearNature] = useState([]);
+  const [gearTrinkets, setGearTrinkets] = useState([]);
+
+  // Load names from names-extra.txt
   useEffect(() => {
     const loadNames = async () => {
       try {
@@ -491,9 +763,7 @@ export default function App() {
           .map((n) => n.trim())
           .filter(Boolean);
 
-        const used = JSON.parse(
-          localStorage.getItem("usedNames") || "[]"
-        );
+        const used = JSON.parse(localStorage.getItem("usedNames") || "[]");
         const remaining = allNames.filter((n) => !used.includes(n));
 
         setNamesPool(remaining);
@@ -506,8 +776,94 @@ export default function App() {
         setLoadingNames(false);
       }
     };
-
     loadNames();
+  }, []);
+
+  // Load random data from /public/random/...
+  useEffect(() => {
+    const loadRandomData = async () => {
+      setLoadingRandomData(true);
+      try {
+        const [
+          adj,
+          le,
+          vil,
+          profs,
+          motivs,
+          mag,
+          // backstory templates file (optional, multiple templates separated by "---" lines)
+          templatesRaw,
+          sPre,
+          sSuf,
+          sNat,
+          sElem,
+          sNob,
+          gMartial,
+          gCaster,
+          gStealth,
+          gDivine,
+          gNature,
+          gTrinkets
+        ] = await Promise.all([
+          loadTextLines("/random/backstory/adjectives.txt"),
+          loadTextLines("/random/backstory/life-events.txt"),
+          loadTextLines("/random/backstory/villains.txt"),
+          loadTextLines("/random/backstory/professions.txt"),
+          loadTextLines("/random/backstory/motivations.txt"),
+          loadTextLines("/random/backstory/magical-effects.txt"),
+          (async () => {
+            try {
+              const res = await fetch("/random/backstory/templates.txt");
+              if (!res.ok) return [];
+              const text = await res.text();
+              // Split templates by blank line or --- separator
+              return text
+                .split(/\n-{3,}\n|\n\s*\n/g)
+                .map((t) => t.trim())
+                .filter(Boolean);
+            } catch {
+              return [];
+            }
+          })(),
+          loadTextLines("/random/surnames/prefixes.txt"),
+          loadTextLines("/random/surnames/suffixes.txt"),
+          loadTextLines("/random/surnames/natural.txt"),
+          loadTextLines("/random/surnames/elemental.txt"),
+          loadTextLines("/random/surnames/noble.txt"),
+          loadTextLines("/random/gear/martial.txt"),
+          loadTextLines("/random/gear/caster.txt"),
+          loadTextLines("/random/gear/stealth.txt"),
+          loadTextLines("/random/gear/divine.txt"),
+          loadTextLines("/random/gear/nature.txt"),
+          loadTextLines("/random/gear/trinkets.txt")
+        ]);
+
+        setAdjectives(adj);
+        setLifeEvents(le);
+        setVillains(vil);
+        setProfessions(profs);
+        setMotivations(motivs);
+        setMagicalEffects(mag);
+        setTemplates(templatesRaw);
+
+        setSurnamePrefixes(sPre);
+        setSurnameSuffixes(sSuf);
+        setSurnameNatural(sNat);
+        setSurnameElemental(sElem);
+        setSurnameNoble(sNob);
+
+        setGearMartial(gMartial);
+        setGearCaster(gCaster);
+        setGearStealth(gStealth);
+        setGearDivine(gDivine);
+        setGearNature(gNature);
+        setGearTrinkets(gTrinkets);
+      } finally {
+        setLoadingRandomData(false);
+      }
+    };
+
+    loadRandomData();
   }, []);
 
   const getUniqueFirstName = () => {
@@ -531,40 +887,6 @@ export default function App() {
     return name;
   };
 
-  const generateSurname = () => {
-    const prefixes = [
-      "Storm",
-      "Shadow",
-      "Iron",
-      "Dawn",
-      "Night",
-      "Bright",
-      "Raven",
-      "Silver",
-      "Blood",
-      "Star",
-      "Wind",
-      "Stone",
-      "Oak",
-      "Ash"
-    ];
-    const suffixes = [
-      "born",
-      "song",
-      "blade",
-      "walker",
-      "ward",
-      "bane",
-      "weaver",
-      "crest",
-      "run",
-      "fall",
-      "brook",
-      "stride"
-    ];
-    return randItem(prefixes) + randItem(suffixes);
-  };
-
   const resolveOptions = () => {
     const race =
       selectedRace === "Any Race" ? randItem(RACES.slice(1)) : selectedRace;
@@ -585,22 +907,34 @@ export default function App() {
     setBusy(true);
 
     setTimeout(() => {
-      let fullName;
-      if (keepName && character) {
-        fullName = character.name;
-      } else {
-        const firstName = getUniqueFirstName();
+      let firstName = null;
+      let fullName = character?.name || "";
+
+      if (!keepName) {
+        firstName = getUniqueFirstName();
         if (!firstName) {
           setBusy(false);
           return;
         }
-        const surname = generateSurname();
-        fullName = `${firstName} ${surname}`;
       }
 
       const { race, clazz, level, gender } = resolveOptions();
       const alignment = randItem(ALIGNMENTS);
       const hometown = randomHometown();
+
+      if (!keepName) {
+        const surname = generateSurname(
+          { race, clazz, hometown },
+          {
+            surnamePrefixes,
+            surnameSuffixes,
+            surnameNatural,
+            surnameElemental,
+            surnameNoble
+          }
+        );
+        fullName = `${firstName} ${surname}`;
+      }
 
       const baseAbilities = generateBaseAbilities();
       const racialAbilities = applyRacialBonuses(baseAbilities, race);
@@ -613,21 +947,31 @@ export default function App() {
       const hp = calculateHP(clazz, level, mods.CON);
       const proficiencyBonus = getProficiencyBonus(level);
 
-      const gear = generateGear(clazz);
-      const personality = randItem(PERSONALITY_TRAITS);
-      const ideal = randItem(IDEALS);
-      const bond = randItem(BONDS);
-      const flaw = randItem(FLAWS);
-
-      const backstory = generateBackstory({
-        name: fullName,
-        race,
+      const gear = generateGear(
         clazz,
-        level,
-        alignment,
-        hometown,
-        gender
-      });
+        {
+          martial: gearMartial,
+          caster: gearCaster,
+          stealth: gearStealth,
+          divine: gearDivine,
+          nature: gearNature,
+          trinkets: gearTrinkets
+        },
+        magicalEffects
+      );
+
+      const backstory = buildBackstory(
+        { name: fullName, race, clazz, level, gender, hometown, alignment },
+        {
+          adjectives,
+          lifeEvents,
+          villains,
+          professions,
+          motivations,
+          magicalEffects,
+          templates
+        }
+      );
 
       const newCharacter = {
         name: fullName,
@@ -640,7 +984,6 @@ export default function App() {
         mods,
         hp,
         proficiencyBonus,
-        traits: { personality, ideal, bond, flaw },
         gear,
         backstory,
         hometown
@@ -652,7 +995,6 @@ export default function App() {
   };
 
   const handleFullyRandom = () => {
-    // Temporarily ignore user filters by randomizing them all
     const randomRace = randItem(RACES.slice(1));
     const randomClass = randItem(CLASSES.slice(1));
     const randomGender = randItem(GENDERS.slice(1));
@@ -674,6 +1016,8 @@ export default function App() {
     buildCharacter({ keepName: true });
   };
 
+  const anyLoading = loadingNames || loadingRandomData;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center p-4">
       <div className="max-w-6xl w-full">
@@ -683,13 +1027,14 @@ export default function App() {
             The Guild Scribe&apos;s Character Scroll
           </h1>
           <p className="mt-2 text-sm md:text-base text-slate-300">
-            A minimalist D&D name & character generator. Each hero is forged from a
-            unique name, accurate stats, and a short tale of adventure.
+            A minimalist D&D name & character generator. Each hero is forged
+            from a unique name, accurate stats, randomized gear, and a
+            template-driven backstory powered by your word lists.
           </p>
         </header>
 
         <div className="grid gap-4 md:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
-          {/* Left: Control panel on a scroll */}
+          {/* Left: Control scroll */}
           <section className="relative">
             <div className="absolute -top-3 left-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
             <div className="absolute -top-3 right-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
@@ -799,28 +1144,28 @@ export default function App() {
                   <button
                     type="button"
                     onClick={handleFullyRandom}
-                    disabled={loadingNames || busy}
+                    disabled={anyLoading || busy}
                     className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold tracking-wide uppercase
                       ${
-                        loadingNames || busy
+                        anyLoading || busy
                           ? "bg-amber-300/70 text-amber-900/60 cursor-not-allowed"
                           : "bg-amber-600 text-amber-50 hover:bg-amber-500 shadow-md shadow-amber-900/40"
                       }`}
                   >
-                    {loadingNames
-                      ? "Loading Names..."
+                    {anyLoading
+                      ? "Loading scrolls..."
                       : busy
-                      ? "Conjuring Hero..."
+                      ? "Conjuring hero..."
                       : "Fully Random Hero"}
                   </button>
 
                   <button
                     type="button"
                     onClick={handleUseSettings}
-                    disabled={loadingNames || busy}
+                    disabled={anyLoading || busy}
                     className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold
                       ${
-                        loadingNames || busy
+                        anyLoading || busy
                           ? "bg-amber-200/80 text-amber-900/60 cursor-not-allowed"
                           : "bg-amber-100/90 text-amber-900 border border-amber-400/80 hover:bg-amber-50"
                       }`}
@@ -844,14 +1189,17 @@ export default function App() {
                 </div>
 
                 <p className="text-[10px] md:text-xs text-amber-800/80 pt-1">
-                  Each first name is consumed from <code>names-extra.txt</code>{" "}
-                  and never reused in this browser, keeping every hero distinct.
+                  First names are consumed from{" "}
+                  <code>names-extra.txt</code> and never reused in this
+                  browser. Backstories, surnames, and gear pull from{" "}
+                  <code>/public/random</code> when available, with lore-friendly
+                  fallbacks.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Right: Character sheet card */}
+          {/* Right: Character sheet */}
           <section className="bg-slate-900/70 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/60 backdrop-blur-sm p-4 md:p-6">
             {!character ? (
               <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-slate-300">
@@ -865,21 +1213,28 @@ export default function App() {
                     <h2 className="text-2xl md:text-3xl font-bold text-amber-200">
                       {character.name}
                     </h2>
-                    <span className="text-xs md:text-sm uppercase tracking-wide text-amber-400">
-                      Level {character.level} {character.race} {character.clazz}
+                    <span className="text-xs md:text-sm uppercase tracking-wide text-amber-400 text-right">
+                      Level {character.level} {character.race}{" "}
+                      {character.clazz}
                     </span>
                   </div>
                   <div className="mt-2 text-xs md:text-sm text-slate-300 flex flex-wrap gap-x-4 gap-y-1">
                     <span>
-                      <span className="font-semibold text-slate-100">Gender:</span>{" "}
+                      <span className="font-semibold text-slate-100">
+                        Gender:
+                      </span>{" "}
                       {character.gender}
                     </span>
                     <span>
-                      <span className="font-semibold text-slate-100">Alignment:</span>{" "}
+                      <span className="font-semibold text-slate-100">
+                        Alignment:
+                      </span>{" "}
                       {character.alignment}
                     </span>
                     <span>
-                      <span className="font-semibold text-slate-100">Hometown:</span>{" "}
+                      <span className="font-semibold text-slate-100">
+                        Hometown:
+                      </span>{" "}
                       {character.hometown}
                     </span>
                   </div>
@@ -922,45 +1277,18 @@ export default function App() {
                           {character.hp}
                         </p>
                         <p>
-                          <span className="font-semibold">Proficiency Bonus:</span>{" "}
+                          <span className="font-semibold">
+                            Proficiency Bonus:
+                          </span>{" "}
                           {formatMod(character.proficiencyBonus)}
                         </p>
                         <p className="text-slate-400 text-[11px] md:text-xs">
-                          HP and proficiency are calculated from class, level, and
-                          Constitution modifier using standard 5e-style rules
-                          (max at 1st, average thereafter).
+                          HP and proficiency follow 5e-style rules (max at 1st
+                          level, average per level afterward, plus Constitution
+                          modifier).
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Traits */}
-                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
-                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
-                    Traits
-                  </h3>
-                  <div className="space-y-1 text-xs md:text-sm text-slate-200">
-                    <p>
-                      <span className="font-semibold text-slate-100">
-                        Personality:
-                      </span>{" "}
-                      {character.traits.personality}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-100">
-                        Ideal:
-                      </span>{" "}
-                      {character.traits.ideal}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-100">Bond:</span>{" "}
-                      {character.traits.bond}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-slate-100">Flaw:</span>{" "}
-                      {character.traits.flaw}
-                    </p>
                   </div>
                 </div>
 
@@ -981,7 +1309,7 @@ export default function App() {
                   <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
                     Backstory
                   </h3>
-                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
+                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed whitespace-pre-line">
                     {character.backstory}
                   </p>
                 </div>

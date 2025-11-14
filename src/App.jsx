@@ -196,7 +196,7 @@ const HIT_DICE = {
   Fighter: 10,
   Paladin: 10,
   Ranger: 10,
-  Blood Hunter: 10,
+  "Blood Hunter": 10,
   Bard: 8,
   Cleric: 8,
   Druid: 8,

@@ -4,3 +4,52 @@ battleaxe
 warhammer
 shield
 chain mail
+broadsword
+scimitar
+falchion
+maul
+mace
+morningstar
+war pick
+halberd
+glaive
+pike
+spear
+javelins
+throwing axes
+handaxe
+warhammer light
+shortsword
+bardiche
+trident
+spiked gauntlets
+buckler shield
+tower shield
+reinforced wooden shield
+studded leather armor
+scale mail
+splint armor
+brigandine
+traveler’s cloak
+iron helm
+horned helmet
+steel bracers
+whetstone
+trophy from a fallen foe
+engraved dagger
+throwing knives
+crossbow with bolts
+hand crossbow
+bolas
+net
+banded mail
+wool bedroll
+rope coil
+iron-bound pack
+ration bundle
+campfire kit
+worn leather boots
+soldier’s handbook
+sparring gloves
+ornamental scabbard
+battle standard ribbon

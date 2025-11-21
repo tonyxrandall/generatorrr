@@ -1030,12 +1030,10 @@ export default function App() {
             className="text-3xl md:text-4xl font-bold tracking-widest text-amber-900 drop-shadow-sm"
             style={{ fontFamily: '"Uncial Antiqua", system-ui, serif' }}
           >
-            The Guild Scribe&apos;s Character Scroll
+            Dnd Character Generator
           </h1>
           <p className="mt-2 text-xs md:text-sm text-stone-800/80 max-w-2xl mx-auto leading-relaxed">
-            A fantasy name & character generator forged in digital parchment:
-            unique Dungeons & Dragons heroes, complete with names, accurate
-            stats, gear, and lore-friendly backstories.
+           Quickly generate characters with unique names, stats, stargting gear and an original backstory.
           </p>
         </header>
 
@@ -1203,16 +1201,7 @@ export default function App() {
                 </div>
 
                 <p className="text-[10px] md:text-xs text-amber-900/80 pt-1 border-t border-dotted border-amber-800/60 mt-1 pt-2 leading-snug">
-                  First names are consumed from{" "}
-                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
-                    names-extra.txt
-                  </code>{" "}
-                  and never reused in this browser. Backstories, surnames, and
-                  gear pull from{" "}
-                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
-                    /public/random
-                  </code>{" "}
-                  when available, with lore-friendly fallbacks.
+                  Testdajfkljskldfjakl;.
                 </p>
               </div>
             </div>

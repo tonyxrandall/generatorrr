@@ -258,7 +258,7 @@ const FALLBACK_GEAR = {
     "daggers",
     "shortbow with arrows",
     "leather armor",
-    "thieves’ tools",
+    "thieves' tools",
     "dark hooded cloak",
     "set of weighted dice",
     "lockpicks wrapped in cloth",
@@ -1019,14 +1019,14 @@ export default function App() {
   const anyLoading = loadingNames || loadingRandomData;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#2b1810] text-[#e8d4b8] flex items-center justify-center p-4">
       <div className="max-w-6xl w-full">
         {/* Header */}
-        <header className="mb-6 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-wide text-amber-300 drop-shadow-md">
-            The Guild Scribe&apos;s Character Scroll
+        <header className="mb-6 text-center border-4 border-double border-[#8b6f47] bg-[#1a0f08] p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-wider text-[#d4af37] uppercase" style={{textShadow: '2px 2px 0px rgba(0,0,0,0.5)'}}>
+            ⚔ The Guild Scribe&apos;s Character Scroll ⚔
           </h1>
-          <p className="mt-2 text-sm md:text-base text-slate-300">
+          <p className="mt-3 text-sm md:text-base text-[#c9b899] border-t-2 border-[#8b6f47] pt-3">
             A minimalist D&D name & character generator. Each hero is forged
             from a unique name, accurate stats, randomized gear, and a
             template-driven backstory powered by your word lists.
@@ -1035,36 +1035,28 @@ export default function App() {
 
         <div className="grid gap-4 md:gap-6 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1.6fr)]">
           {/* Left: Control scroll */}
-          <section className="relative">
-            <div className="absolute -top-3 left-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
-            <div className="absolute -top-3 right-6 w-6 h-6 rounded-full bg-red-900 shadow-lg border border-red-700" />
-
-            <div className="bg-gradient-to-b from-amber-100/90 via-amber-50/95 to-amber-100/90 text-slate-900 border border-amber-500/70 rounded-xl shadow-xl shadow-amber-900/30 px-4 py-5 md:px-5 md:py-6 relative overflow-hidden">
-              <div className="absolute inset-x-6 top-0 h-1 border-b border-amber-700/50" />
-              <div className="absolute inset-x-4 bottom-0 h-1 border-t border-amber-700/40" />
-              <div className="absolute inset-y-4 left-2 w-px bg-amber-700/40" />
-              <div className="absolute inset-y-4 right-2 w-px bg-amber-700/40" />
-
-              <h2 className="relative text-lg font-semibold text-amber-900 mb-3">
-                Summoning Ritual
+          <section>
+            <div className="bg-[#f4e8d0] text-[#2b1810] border-4 border-[#8b6f47] shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] px-4 py-5 md:px-5 md:py-6">
+              <h2 className="text-lg font-bold text-[#5a3a1a] mb-3 uppercase tracking-wide border-b-2 border-[#8b6f47] pb-2">
+                » Summoning Ritual «
               </h2>
 
               {error && (
-                <div className="relative mb-3 rounded-lg border border-red-500/70 bg-red-50/90 px-3 py-2 text-xs text-red-900">
-                  {error}
+                <div className="mb-3 border-2 border-[#8b0000] bg-[#ffcccc] px-3 py-2 text-xs text-[#8b0000]">
+                  <strong>Error:</strong> {error}
                 </div>
               )}
 
-              <div className="space-y-3 text-xs md:text-sm relative">
+              <div className="space-y-3 text-xs md:text-sm">
                 {/* Gender */}
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-900/90">
+                  <label className="font-bold text-[#5a3a1a] uppercase text-xs">
                     Gender
                   </label>
                   <select
                     value={selectedGender}
                     onChange={(e) => setSelectedGender(e.target.value)}
-                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                    className="border-2 border-[#8b6f47] bg-white px-2 py-1 text-xs md:text-sm focus:outline-none focus:border-[#d4af37]"
                   >
                     {GENDERS.map((g) => (
                       <option key={g} value={g}>
@@ -1076,13 +1068,13 @@ export default function App() {
 
                 {/* Race */}
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-900/90">
+                  <label className="font-bold text-[#5a3a1a] uppercase text-xs">
                     Race
                   </label>
                   <select
                     value={selectedRace}
                     onChange={(e) => setSelectedRace(e.target.value)}
-                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                    className="border-2 border-[#8b6f47] bg-white px-2 py-1 text-xs md:text-sm focus:outline-none focus:border-[#d4af37]"
                   >
                     {RACES.map((r) => (
                       <option key={r} value={r}>
@@ -1094,13 +1086,13 @@ export default function App() {
 
                 {/* Class */}
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-900/90">
+                  <label className="font-bold text-[#5a3a1a] uppercase text-xs">
                     Class
                   </label>
                   <select
                     value={selectedClass}
                     onChange={(e) => setSelectedClass(e.target.value)}
-                    className="rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                    className="border-2 border-[#8b6f47] bg-white px-2 py-1 text-xs md:text-sm focus:outline-none focus:border-[#d4af37]"
                   >
                     {CLASSES.map((c) => (
                       <option key={c} value={c}>
@@ -1112,11 +1104,11 @@ export default function App() {
 
                 {/* Level */}
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-900/90 flex items-center justify-between">
+                  <label className="font-bold text-[#5a3a1a] uppercase text-xs flex items-center justify-between">
                     <span>Level</span>
                     {selectedLevel !== "Random" && (
-                      <span className="text-[10px] md:text-xs text-amber-800/80">
-                        {selectedLevel}
+                      <span className="text-[10px] md:text-xs text-[#7a5a3a] font-normal">
+                        Level {selectedLevel}
                       </span>
                     )}
                   </label>
@@ -1124,50 +1116,50 @@ export default function App() {
                     <select
                       value={selectedLevel}
                       onChange={(e) => setSelectedLevel(e.target.value)}
-                      className="w-24 rounded-md border border-amber-400/70 bg-amber-50/80 px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs md:text-sm"
+                      className="w-32 border-2 border-[#8b6f47] bg-white px-2 py-1 text-xs md:text-sm focus:outline-none focus:border-[#d4af37]"
                     >
                       <option value="Random">Random (1–20)</option>
                       {Array.from({ length: 20 }).map((_, i) => (
                         <option key={i + 1} value={i + 1}>
-                          {i + 1}
+                          Level {i + 1}
                         </option>
                       ))}
                     </select>
-                    <span className="text-[10px] md:text-xs text-amber-800/80">
-                      Higher levels gain ASIs and more HP.
+                    <span className="text-[10px] md:text-xs text-[#7a5a3a]">
+                      Higher = more ASIs & HP
                     </span>
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div className="pt-2 border-t border-amber-400/60 flex flex-col gap-2">
+                <div className="pt-3 border-t-2 border-[#8b6f47] flex flex-col gap-2">
                   <button
                     type="button"
                     onClick={handleFullyRandom}
                     disabled={anyLoading || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold tracking-wide uppercase
+                    className={`w-full border-3 border-[#000] px-3 py-2 text-xs md:text-sm font-bold tracking-wide uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,0.4)]
                       ${
                         anyLoading || busy
-                          ? "bg-amber-300/70 text-amber-900/60 cursor-not-allowed"
-                          : "bg-amber-600 text-amber-50 hover:bg-amber-500 shadow-md shadow-amber-900/40"
+                          ? "bg-[#999] text-[#666] cursor-not-allowed border-[#666]"
+                          : "bg-[#d4af37] text-[#000] hover:bg-[#f4cf47] active:shadow-[1px_1px_0px_0px_rgba(0,0,0,0.4)] active:translate-x-[2px] active:translate-y-[2px]"
                       }`}
                   >
                     {anyLoading
-                      ? "Loading scrolls..."
+                      ? "⧗ Loading scrolls..."
                       : busy
-                      ? "Conjuring hero..."
-                      : "Fully Random Hero"}
+                      ? "⧗ Conjuring hero..."
+                      : "★ Fully Random Hero ★"}
                   </button>
 
                   <button
                     type="button"
                     onClick={handleUseSettings}
                     disabled={anyLoading || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold
+                    className={`w-full border-2 border-[#8b6f47] px-3 py-2 text-xs md:text-sm font-bold uppercase
                       ${
                         anyLoading || busy
-                          ? "bg-amber-200/80 text-amber-900/60 cursor-not-allowed"
-                          : "bg-amber-100/90 text-amber-900 border border-amber-400/80 hover:bg-amber-50"
+                          ? "bg-[#ddd] text-[#999] cursor-not-allowed"
+                          : "bg-[#fff] text-[#5a3a1a] hover:bg-[#f4e8d0]"
                       }`}
                   >
                     Use My Settings
@@ -1177,22 +1169,22 @@ export default function App() {
                     type="button"
                     onClick={handleRerollKeepingName}
                     disabled={!character || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-[11px] md:text-xs font-medium
+                    className={`w-full border-2 border-[#8b6f47] px-3 py-2 text-[11px] md:text-xs font-semibold
                       ${
                         !character || busy
-                          ? "bg-amber-50/60 text-amber-900/40 cursor-not-allowed"
-                          : "bg-transparent border border-amber-400/70 text-amber-900 hover:bg-amber-100/80"
+                          ? "bg-[#f0f0f0] text-[#aaa] cursor-not-allowed"
+                          : "bg-transparent text-[#5a3a1a] hover:bg-[#f9f3e8]"
                       }`}
                   >
                     Re-roll Stats & Story (Keep Name)
                   </button>
                 </div>
 
-                <p className="text-[10px] md:text-xs text-amber-800/80 pt-1">
-                  First names are consumed from{" "}
-                  <code>names-extra.txt</code> and never reused in this
+                <p className="text-[10px] md:text-xs text-[#7a5a3a] pt-1 border-t border-[#c9b899]">
+                  <strong>Note:</strong> First names are consumed from{" "}
+                  <code className="bg-[#e0d4c0] px-1 py-0.5">names-extra.txt</code> and never reused in this
                   browser. Backstories, surnames, and gear pull from{" "}
-                  <code>/public/random</code> when available, with lore-friendly
+                  <code className="bg-[#e0d4c0] px-1 py-0.5">/public/random</code> when available, with lore-friendly
                   fallbacks.
                 </p>
               </div>
@@ -1200,41 +1192,37 @@ export default function App() {
           </section>
 
           {/* Right: Character sheet */}
-          <section className="bg-slate-900/70 border border-slate-700/80 rounded-2xl shadow-2xl shadow-black/60 backdrop-blur-sm p-4 md:p-6">
+          <section className="bg-[#1a0f08] border-4 border-[#8b6f47] shadow-[6px_6px_0px_0px_rgba(0,0,0,0.3)] p-4 md:p-6">
             {!character ? (
-              <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-slate-300">
-                Use the scroll to the left to summon your first hero.
+              <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-[#c9b899] border-2 border-dashed border-[#5a3a1a] p-8">
+                <div>
+                  <div className="text-4xl mb-3">⚔</div>
+                  <p>Use the scroll to the left to summon your first hero.</p>
+                </div>
               </div>
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {/* Identity */}
-                <div className="border-b border-slate-700 pb-3">
+                <div className="border-b-2 border-[#8b6f47] pb-3">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-2xl md:text-3xl font-bold text-amber-200">
+                    <h2 className="text-2xl md:text-3xl font-bold text-[#d4af37] uppercase">
                       {character.name}
                     </h2>
-                    <span className="text-xs md:text-sm uppercase tracking-wide text-amber-400 text-right">
-                      Level {character.level} {character.race}{" "}
-                      {character.clazz}
+                    <span className="text-xs md:text-sm uppercase tracking-wide text-[#c9b899]">
+                      Lvl {character.level} {character.race} {character.clazz}
                     </span>
                   </div>
-                  <div className="mt-2 text-xs md:text-sm text-slate-300 flex flex-wrap gap-x-4 gap-y-1">
+                  <div className="mt-2 text-xs md:text-sm text-[#c9b899] flex flex-wrap gap-x-4 gap-y-1">
                     <span>
-                      <span className="font-semibold text-slate-100">
-                        Gender:
-                      </span>{" "}
+                      <strong className="text-[#d4af37]">Gender:</strong>{" "}
                       {character.gender}
                     </span>
                     <span>
-                      <span className="font-semibold text-slate-100">
-                        Alignment:
-                      </span>{" "}
+                      <strong className="text-[#d4af37]">Alignment:</strong>{" "}
                       {character.alignment}
                     </span>
                     <span>
-                      <span className="font-semibold text-slate-100">
-                        Hometown:
-                      </span>{" "}
+                      <strong className="text-[#d4af37]">Hometown:</strong>{" "}
                       {character.hometown}
                     </span>
                   </div>
@@ -1242,23 +1230,23 @@ export default function App() {
 
                 {/* Stats & combat */}
                 <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4">
-                  <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
-                    <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                  <div className="bg-[#2b1810] border-2 border-[#8b6f47] p-3 md:p-4">
+                    <h3 className="text-sm md:text-base font-bold text-[#d4af37] mb-2 uppercase tracking-wide">
                       Ability Scores
                     </h3>
                     <div className="grid grid-cols-3 gap-2 text-xs md:text-sm">
                       {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
                         <div
                           key={stat}
-                          className="bg-slate-800/80 rounded-lg px-2.5 py-2 flex flex-col items-center justify-center border border-slate-700/80"
+                          className="bg-[#1a0f08] border-2 border-[#5a3a1a] px-2.5 py-2 flex flex-col items-center justify-center"
                         >
-                          <span className="text-[11px] font-semibold text-slate-300">
+                          <span className="text-[11px] font-bold text-[#d4af37] uppercase">
                             {stat}
                           </span>
-                          <span className="text-sm md:text-base font-bold text-amber-100">
+                          <span className="text-lg md:text-xl font-bold text-[#e8d4b8]">
                             {character.abilities[stat]}
                           </span>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-[#999]">
                             {formatMod(character.mods[stat])}
                           </span>
                         </div>
@@ -1266,23 +1254,21 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4 flex flex-col justify-between">
+                  <div className="bg-[#2b1810] border-2 border-[#8b6f47] p-3 md:p-4 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                      <h3 className="text-sm md:text-base font-bold text-[#d4af37] mb-2 uppercase tracking-wide">
                         Combat Summary
                       </h3>
-                      <div className="space-y-1 text-xs md:text-sm text-slate-200">
+                      <div className="space-y-1 text-xs md:text-sm text-[#e8d4b8]">
                         <p>
-                          <span className="font-semibold">Hit Points:</span>{" "}
+                          <strong className="text-[#c9b899]">Hit Points:</strong>{" "}
                           {character.hp}
                         </p>
                         <p>
-                          <span className="font-semibold">
-                            Proficiency Bonus:
-                          </span>{" "}
+                          <strong className="text-[#c9b899]">Proficiency Bonus:</strong>{" "}
                           {formatMod(character.proficiencyBonus)}
                         </p>
-                        <p className="text-slate-400 text-[11px] md:text-xs">
+                        <p className="text-[#999] text-[11px] md:text-xs pt-1 border-t border-[#5a3a1a]">
                           HP and proficiency follow 5e-style rules (max at 1st
                           level, average per level afterward, plus Constitution
                           modifier).
@@ -1293,11 +1279,11 @@ export default function App() {
                 </div>
 
                 {/* Gear */}
-                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
-                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                <div className="bg-[#2b1810] border-2 border-[#8b6f47] p-3 md:p-4">
+                  <h3 className="text-sm md:text-base font-bold text-[#d4af37] mb-2 uppercase tracking-wide">
                     Starting Gear
                   </h3>
-                  <ul className="list-disc list-inside text-xs md:text-sm text-slate-200 space-y-0.5">
+                  <ul className="list-disc list-inside text-xs md:text-sm text-[#e8d4b8] space-y-0.5">
                     {character.gear.map((item, idx) => (
                       <li key={idx}>{item}</li>
                     ))}
@@ -1305,11 +1291,11 @@ export default function App() {
                 </div>
 
                 {/* Backstory */}
-                <div className="bg-slate-900/80 border border-slate-700 rounded-xl p-3 md:p-4">
-                  <h3 className="text-sm md:text-base font-semibold text-amber-200 mb-2">
+                <div className="bg-[#2b1810] border-2 border-[#8b6f47] p-3 md:p-4">
+                  <h3 className="text-sm md:text-base font-bold text-[#d4af37] mb-2 uppercase tracking-wide">
                     Backstory
                   </h3>
-                  <p className="text-xs md:text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+                  <p className="text-xs md:text-sm text-[#e8d4b8] leading-relaxed whitespace-pre-line">
                     {character.backstory}
                   </p>
                 </div>

@@ -4,3 +4,211 @@ wandering minstrel
 temple archivist
 failed squire
 runaway noble
+herbalist assistant
+village candle maker
+traveling peddler
+dockside fisher
+nomadic shepherd
+innkeeper’s helper
+apprentice stonemason
+scribbler of cheap romances
+rustbelt tanner
+cobbler’s runner
+hovering scribe’s aide
+wayward courier
+tavern pot-washer
+barge ferryman
+novice astrologer
+farmstead beekeeper
+aspiring cartographer
+lone trapper
+rookie bowyer
+aspiring rune carver
+sewer maintenance worker
+market hawker
+apprentice jeweler
+failed merchant
+village healer’s helper
+caravan cook
+temple caretaker
+restless pickpocket
+town messenger
+unlicensed alchemist
+castle maid
+stable muck-handler
+shipboard deckhand
+cart puller
+novice illusionist
+graveyard caretaker
+reclusive beekeeper
+rookie falconer
+rundown tavern bard
+desperate spice seller
+failed potion brewer
+scroll organizer
+rookie rat catcher
+mudbrick maker
+tent repair worker
+junior diplomat
+penniless scholar
+fish-gutter
+moss collector
+herb-drying apprentice
+lost caravan guard
+half-trained herbal alchemist
+night-soil cart driver
+poorly paid scribe
+rookie bounty seeker
+failed treasure diver
+traveling charm peddler
+guide-for-hire
+roadside beggar
+prospective sailor
+barn repair worker
+village storyteller
+market stall cleaner
+failed monster hunter
+old-book re-binder
+lantern keeper
+city gate hand
+rookie archivist
+town square performer
+errand boy
+untrained medium
+grave whisperer
+rookie beast tamer
+traveling bone merchant
+failed assassin’s trainee
+fortune-card reader
+fence for stolen goods
+rag-picker
+apprentice weaver
+bottle washer
+temple bell ringer
+juggler-for-hire
+tent-town gambler
+floating-scribe copyist
+inexperienced rune cleaner
+runaway butcher’s apprentice
+low-ranking city guard
+village lookout
+rookie chimney sweep
+coal hauler
+market butcher helper
+underpaid ferrier
+half-trained potion tester
+occasional grave digger
+wandering herb seller
+archery range sweeper
+quarry stone lifter
+filigree apprentice
+errant woodcutter
+scroll patcher
+stargazer novice
+orchard caretaker
+apprentice healer
+cattle drover
+runaway monk
+penniless relic collector
+lost relic seeker
+aspiring beast rider
+traveling shrine polisher
+seaside scavenger
+driftwood carver
+portside hauler
+coin polisher
+ragged minstrel
+kitchen scullion
+milkmaid turned wanderer
+barn owl breeder
+rookie rune inscriber
+luckless treasure duster
+harbor bucket runner
+country charm maker
+town crier trainee
+acolyte candle snuffer
+groom’s assistant
+forsaken stable thief
+failed gemstone polisher
+quill sharpener
+archive dust remover
+dockside eel seller
+unlucky rat breeder
+tent-town scribe
+bridge painter
+rusty-gear tinkerer
+rookie charm crafter
+inferior rune painter
+scripture copier
+wagon axle oiler
+village lantern lighter
+failed map maker
+sunrise fisherman
+border watcher
+rookie relic polisher
+unused shrine sweeper
+caravan route scout
+desperate relic restorer
+fledgling fortune spinner
+broken-lute player
+wandering parchment seller
+sheath maker apprentice
+temple incense mixer
+ritual broom wielder
+junior relic ward
+rookie plague runner
+aspiring beast trainer
+failed temple monk
+sock mender
+rookie embalmer
+wood-shaving collector
+runaway scribe
+secret-note courier
+struggling rune singer
+sanctuary sweeper
+tent-side watcher
+dockside pearl collector
+street-level relic hawker
+wayhouse assistant
+runaway page
+outpost cook
+rookie cobbler
+harbor rope braider
+festival jester
+unlicensed charm-maker
+crumbling scroll stitcher
+barn roof patcher
+village chicken wrangler
+mushroom gatherer
+breadcrumb vendor
+nomad storyteller
+lonely road piper
+shabby relic vendor
+muddy-road guide
+boardwalk gambler
+tiny-shrine attendant
+lost prophecy keeper
+frustrated apprentice mage
+field scribbler
+forest druid hopeful
+basic runestone cleaner
+shivering torch bearer
+harbor net fixer
+failed wildling hunter
+old-robes mender
+fledgling potion sniffer
+tower steward’s helper
+noisy-cart driver
+half-taught shaman’s aide
+barefoot pilgrim
+tent-circle drum player
+apprentice enchanter
+stone-turner
+barge rope thrower
+camp cook’s helper
+coal scrounger
+market bench singer
+dusty tome reader
+ferryman’s runner
+lantern wick cutter
+temple water carrier

@@ -1028,7 +1028,7 @@ export default function App() {
         <header className="mb-5 text-center border-b border-amber-900/40 pb-3">
           <h1
             className="text-3xl md:text-4xl font-bold tracking-widest text-amber-900 drop-shadow-sm"
-            style={{ fontFamily: '"Uncial Antiqua", system-ui, serif' }}
+            style={{ fontFamily: '"Eagle Lake", serif' }}
           >
             Dnd Character Generator
           </h1>
@@ -1053,7 +1053,7 @@ export default function App() {
 
               <h2
                 className="relative text-base md:text-lg font-semibold text-amber-900 mb-3 tracking-wide"
-                style={{ fontFamily: '"Uncial Antiqua", system-ui, serif' }}
+                style={{ fontFamily: '"Eagle Lake", serif' }}
               >
                 Summoning Ritual
               </h2>
@@ -1223,7 +1223,7 @@ export default function App() {
                     <h2
                       className="text-2xl md:text-3xl font-bold text-amber-950 drop-shadow-sm"
                       style={{
-                        fontFamily: '"Uncial Antiqua", system-ui, serif'
+                        fontFamily: '"Eagle Lake", serif'
                       }}
                     >
                       {character.name}
@@ -1261,7 +1261,7 @@ export default function App() {
                     <h3
                       className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
                       style={{
-                        fontFamily: '"Uncial Antiqua", system-ui, serif'
+                        fontFamily: '"Eagle Lake", serif'
                       }}
                     >
                       Ability Scores
@@ -1291,7 +1291,7 @@ export default function App() {
                       <h3
                         className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
                         style={{
-                          fontFamily: '"Uncial Antiqua", system-ui, serif'
+                          fontFamily: '"Eagle Lake", serif'
                         }}
                       >
                         Combat Summary
@@ -1323,7 +1323,7 @@ export default function App() {
                 <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
                   <h3
                     className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                    style={{ fontFamily: '"Uncial Antiqua", system-ui, serif' }}
+                    style={{ fontFamily: '"Eagle Lake", serif' }}
                   >
                     Starting Gear
                   </h3>
@@ -1338,7 +1338,7 @@ export default function App() {
                 <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
                   <h3
                     className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                    style={{ fontFamily: '"Uncial Antiqua", system-ui, serif' }}
+                    style={{ fontFamily: '"Eagle Lake", serif' }}
                   >
                     Backstory
                   </h3>

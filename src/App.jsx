@@ -424,9 +424,10 @@ const applyASI = (abilities, clazz, level) => {
       result[primary] += 2;
     } else {
       const otherKeys = Object.keys(result).filter((k) => k !== primary);
-      const highestOther = otherKeys.reduce((best, cur) =>
-        result[cur] > result[best] ? cur : best
-      , otherKeys[0]);
+      const highestOther = otherKeys.reduce(
+        (best, cur) => (result[cur] > result[best] ? cur : best),
+        otherKeys[0]
+      );
       if (result[highestOther] < 20) {
         result[highestOther] += 2;
       }
@@ -498,16 +499,17 @@ const loadTextLines = async (path) => {
 // Pick from external pool or fallback
 const pickFromPool = (external, fallback) => {
   const source =
-    external && external.length > 0 ? external : fallback && fallback.length > 0 ? fallback : [];
+    external && external.length > 0
+      ? external
+      : fallback && fallback.length > 0
+      ? fallback
+      : [];
   return source.length ? randItem(source) : "";
 };
 
 // ====== BACKSTORY & GEAR BUILDERS ======
 
-const generateSurname = (
-  ctx,
-  surnamePools
-) => {
+const generateSurname = (ctx, surnamePools) => {
   const {
     surnamePrefixes,
     surnameSuffixes,
@@ -554,7 +556,7 @@ const generateSurname = (
           .split(" ")[0];
         return `${townName}born`;
       }
-      // fallthrough to composite
+    // fallthrough to composite
     case "composite":
     default: {
       const pre = randItem(prefixes);
@@ -891,7 +893,9 @@ export default function App() {
     const race =
       selectedRace === "Any Race" ? randItem(RACES.slice(1)) : selectedRace;
     const clazz =
-      selectedClass === "Any Class" ? randItem(CLASSES.slice(1)) : selectedClass;
+      selectedClass === "Any Class"
+        ? randItem(CLASSES.slice(1))
+        : selectedClass;
     const level =
       selectedLevel === "Random"
         ? Math.floor(Math.random() * 20) + 1
@@ -985,7 +989,7 @@ export default function App() {
         hp,
         proficiencyBonus,
         gear,
-        backstory,
+        backstory, // still generated, just not displayed
         hometown
       };
 
@@ -1030,17 +1034,18 @@ export default function App() {
             className="text-3xl md:text-4xl font-bold tracking-widest text-amber-900 drop-shadow-sm"
             style={{ fontFamily: '"Eagle Lake", serif' }}
           >
-            Dnd Character Generator
+            D&amp;D Character Generator
           </h1>
           <p className="mt-2 text-xs md:text-sm text-stone-800/80 max-w-2xl mx-auto leading-relaxed">
-           Quickly generate characters with unique names, stats, stargting gear and an original backstory.
+            Quickly generate D&amp;D characters with unique names, accurate
+            stats, and starting gear.
           </p>
         </header>
 
         <div className="grid gap-4 md:gap-6 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1.65fr)]">
           {/* Left: Control scroll */}
           <section className="relative">
-            {/* &quot;Old internet&quot; tack pins */}
+            {/* "Old internet" tack pins */}
             <div className="absolute -top-3 left-6 w-6 h-6 rounded-full bg-amber-900 shadow-md border border-amber-700/90" />
             <div className="absolute -top-3 right-6 w-6 h-6 rounded-full bg-amber-900 shadow-md border border-amber-700/90" />
 
@@ -1148,7 +1153,7 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Buttons (updated order & labels) */}
+                {/* Buttons */}
                 <div className="pt-2 mt-1 border-t border-amber-800/60 flex flex-col gap-2">
                   {/* Primary: Generate (Use My Settings) */}
                   <button
@@ -1196,12 +1201,21 @@ export default function App() {
                           : "bg-transparent border-amber-500/70 text-amber-900 hover:bg-amber-50/80"
                       }`}
                   >
-                    Re-roll Stats &amp; Story (Keep Name)
+                    Re-roll Stats (Keep Name)
                   </button>
                 </div>
 
-                <p className="text-[10px] md:text-xs text-amber-900/80 pt-1 border-t border-dotted border-amber-800/60 mt-1 pt-2 leading-snug">
-                  Testdajfkljskldfjakl;.
+                <p className="text-[10px] md:text-xs text-amber-900/80 border-t border-dotted border-amber-800/60 mt-2 pt-2 leading-snug">
+                  First names are drawn from{" "}
+                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
+                    names-extra.txt
+                  </code>{" "}
+                  and are not reused in this browser. Gear and other details can
+                  pull from optional tables in{" "}
+                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
+                    /public/random
+                  </code>{" "}
+                  when present.
                 </p>
               </div>
             </div>
@@ -1209,7 +1223,7 @@ export default function App() {
 
           {/* Right: Character sheet */}
           <section className="bg-amber-50/80 border border-amber-800/60 rounded-2xl shadow-[0_10px_0_rgba(120,53,15,0.55)] px-4 py-4 md:px-6 md:py-5 relative overflow-hidden">
-            {/* Faint &quot;old net&quot; grid overlay */}
+            {/* Faint "old net" grid overlay */}
             <div className="pointer-events-none absolute inset-3 border border-amber-800/20 rounded-xl" />
             {!character ? (
               <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-stone-800/80 relative">
@@ -1310,9 +1324,9 @@ export default function App() {
                           {formatMod(character.proficiencyBonus)}
                         </p>
                         <p className="text-amber-900/80 text-[11px] md:text-xs mt-1 leading-snug">
-                          HP and proficiency follow 5e-style rules:
-                          max at 1st level, average per level thereafter,
-                          plus Constitution modifier.
+                          HP and proficiency follow 5e-style rules: max at 1st
+                          level, average per level thereafter, plus Constitution
+                          modifier.
                         </p>
                       </div>
                     </div>
@@ -1334,7 +1348,10 @@ export default function App() {
                   </ul>
                 </div>
 
-                {/* Backstory */}
+                {/* Backstory section intentionally hidden from UI.
+                    The backstory is still generated and stored on character.backstory
+                    if you want to re-enable it later, you can uncomment this block:
+
                 <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
                   <h3
                     className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
@@ -1346,6 +1363,7 @@ export default function App() {
                     {character.backstory}
                   </p>
                 </div>
+                */}
               </div>
             )}
           </section>

@@ -1037,8 +1037,8 @@ export default function App() {
             D&amp;D Character Generator
           </h1>
           <p className="mt-2 text-xs md:text-sm text-stone-800/80 max-w-2xl mx-auto leading-relaxed">
-            Quickly generate D&amp;D characters with unique names, accurate
-            stats, and starting gear.
+            Quickly generate D&amp;D characters with unique names,
+            stats and starting gear.
           </p>
         </header>
 
@@ -1148,7 +1148,7 @@ export default function App() {
                       ))}
                     </select>
                     <span className="text-[10px] md:text-xs text-amber-900/70">
-                      Higher levels gain ASIs and more HP.
+                     
                     </span>
                   </div>
                 </div>
@@ -1206,16 +1206,7 @@ export default function App() {
                 </div>
 
                 <p className="text-[10px] md:text-xs text-amber-900/80 border-t border-dotted border-amber-800/60 mt-2 pt-2 leading-snug">
-                  First names are drawn from{" "}
-                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
-                    names-extra.txt
-                  </code>{" "}
-                  and are not reused in this browser. Gear and other details can
-                  pull from optional tables in{" "}
-                  <code className="px-1 rounded bg-amber-200/80 border border-amber-700/60 text-[10px]">
-                    /public/random
-                  </code>{" "}
-                  when present.
+                  
                 </p>
               </div>
             </div>
@@ -1227,7 +1218,7 @@ export default function App() {
             <div className="pointer-events-none absolute inset-3 border border-amber-800/20 rounded-xl" />
             {!character ? (
               <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-stone-800/80 relative">
-                Use the ritual scroll to the left to summon your first hero.
+                {/* PLACEHOLDER MESSAGE */}
               </div>
             ) : (
               <div className="space-y-5 relative">

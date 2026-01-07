@@ -1,4 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  ChevronDown,
+  Copy,
+  Download,
+  Menu,
+  RotateCcw,
+  Sparkles,
+  Star,
+  Wand2,
+  X
+} from "lucide-react";
 
 // ====== CONFIG DATA (FALLBACKS) ======
 
@@ -58,87 +69,8 @@ const CLASSES = [
   "Wizard"
 ];
 
-const ALIGNMENTS = [
-  "Lawful Good",
-  "Neutral Good",
-  "Chaotic Good",
-  "Lawful Neutral",
-  "True Neutral",
-  "Chaotic Neutral",
-  "Lawful Evil",
-  "Neutral Evil",
-  "Chaotic Evil"
-];
-
 const GENDERS = ["Any", "Female", "Male", "Non-binary", "Other"];
-
-// Fallback backstory pools
-const FALLBACK_ADJECTIVES = [
-  "stoic",
-  "reckless",
-  "brooding",
-  "soft-spoken",
-  "quick-witted",
-  "superstitious",
-  "vengeful",
-  "hopeful"
-];
-
-const FALLBACK_LIFE_EVENTS = [
-  "survived a dragon attack",
-  "lost their mentor in a mysterious fire",
-  "discovered an ancient ruin",
-  "escaped captivity from a shadow cult",
-  "witnessed forbidden magic"
-];
-
-const FALLBACK_VILLAINS = [
-  "a shadow cult",
-  "an exiled warlock",
-  "a corrupted noble",
-  "a rampaging dragon",
-  "a rogue artificer"
-];
-
-const FALLBACK_PROFESSIONS = [
-  "apprentice blacksmith",
-  "street-level fortune teller",
-  "wandering minstrel",
-  "temple archivist",
-  "failed squire",
-  "runaway noble"
-];
-
-const FALLBACK_MOTIVATIONS = [
-  "seek redemption",
-  "uncover forbidden secrets",
-  "restore their family honor",
-  "avenge past wrongs",
-  "stop an incoming catastrophe"
-];
-
-const FALLBACK_MAGICAL_EFFECTS = [
-  "glows faintly during moonlight",
-  "whispers fragments of forgotten runes",
-  "emits sparks when danger is near",
-  "grows cold in the presence of evil",
-  "hums softly when a spell is cast"
-];
-
-// Fallback backstory templates (single template used per character)
-const FALLBACK_TEMPLATES = [
-  `{name} was a {adjective} {race} {clazz} from {hometown}, once known only as a humble {profession}. 
-Long before {p_subj} reached level {level}, {p_subj} {lifeEvent}, leaving {p_obj} forever changed. 
-Since then, {p_subj} has wandered the realm to {motivation}, with rumors whispering that {p_poss} gear sometimes {magicalEffect}. 
-Now, as a {alignment} soul, {name} walks a path few dare to follow.`,
-  `In the quiet days of {hometown}, {name} lived as a {profession}, a life too small for a {adjective} spirit. 
-Everything shifted when {p_subj} {lifeEvent}, drawing the ire of {villain}. 
-Taking up the mantle of a level {level} {race} {clazz}, {name} set out to {motivation}, even as {p_poss} shadowed past clings tightly to {p_possPron}.`,
-  `{name} was never meant to be ordinary. Born in {hometown} and known as a {profession}, 
-{p_subj} carried a {adjective} determination that others overlooked. 
-After {p_subj} {lifeEvent}, the road ahead bent sharply toward danger and destiny. 
-Now a level {level} {race} {clazz}, {name} seeks to {motivation}, while whispers claim that something {magicalEffect} surrounds {p_obj} whenever steel and sorcery clash.`
-];
+const REGIONS = ["Any Region", "Forgotten Realms", "Eberron", "Ravenloft"];
 
 // Fallback surnames
 const FALLBACK_SURNAME_PREFIXES = [
@@ -200,113 +132,36 @@ const FALLBACK_SURNAME_NOBLE = [
   "of Blackstone Keep"
 ];
 
-// Hit dice by class
-const HIT_DICE = {
-  Barbarian: 12,
-  Fighter: 10,
-  Paladin: 10,
-  Ranger: 10,
-  "Blood Hunter": 10,
-  Bard: 8,
-  Cleric: 8,
-  Druid: 8,
-  Monk: 8,
-  Rogue: 8,
-  Warlock: 8,
-  Artificer: 8,
-  Sorcerer: 6,
-  Wizard: 6
-};
+const NAV_LINKS = [
+  { label: "Name Generator", href: "/name-generator" },
+  { label: "Character Generator", href: "/character-generator" },
+  { label: "Dice Roller", href: "/dice-roller" },
+  { label: "NPC Generator", href: "/npc-generator" },
+  { label: "DM Tools", href: "/dm-tools" }
+];
 
-// Primary stat by class
-const PRIMARY_STAT = {
-  Barbarian: "STR",
-  Bard: "CHA",
-  Cleric: "WIS",
-  Druid: "WIS",
-  Fighter: "STR",
-  Monk: "DEX",
-  Paladin: "STR",
-  Ranger: "DEX",
-  Rogue: "DEX",
-  Sorcerer: "CHA",
-  Warlock: "CHA",
-  Wizard: "INT",
-  Artificer: "INT",
-  "Blood Hunter": "DEX"
-};
-
-// Gear fallback pools (used if external files are missing)
-const FALLBACK_GEAR = {
-  martial: [
-    "longsword",
-    "greatsword",
-    "battleaxe",
-    "warhammer",
-    "shield",
-    "chain mail",
-    "javelins",
-    "crossbow with bolts",
-    "traveler's clothes",
-    "backpack with rations",
-    "whetstone",
-    "inscribed family crest",
-    "trophy taken from a fallen foe"
-  ],
-  stealth: [
-    "shortsword",
-    "daggers",
-    "shortbow with arrows",
-    "leather armor",
-    "thieves’ tools",
-    "dark hooded cloak",
-    "set of weighted dice",
-    "lockpicks wrapped in cloth",
-    "soft-soled boots",
-    "small vial of poison",
-    "ring of unknown origin"
-  ],
-  caster: [
-    "spellbook",
-    "arcane focus",
-    "component pouch",
-    "simple dagger",
-    "scholar's robes",
-    "ink and quill",
-    "bundle of candles",
-    "mysterious scroll",
-    "tiny crystal vial of starlight",
-    "charred fragment of an old grimoire"
-  ],
-  divine: [
-    "holy symbol",
-    "mace",
-    "shield embossed with a symbol of faith",
-    "chain shirt",
-    "prayer book",
-    "incense and censer",
-    "vestments",
-    "bottle of blessed water",
-    "wooden charm from a grateful villager"
-  ],
-  nature: [
-    "quarterstaff",
-    "scimitar",
-    "leather armor",
-    "herbalism kit",
-    "druidic totem",
-    "bundle of dried herbs",
-    "cloak smelling faintly of pine",
-    "animal-bone necklace",
-    "small carved wooden animal"
-  ],
-  trinkets: [
-    "lucky coin",
-    "feather charm",
-    "broken compass",
-    "engraved locket"
-  ]
-};
+const FAQ_ITEMS = [
+  {
+    question: "Can I lock a race or class and still generate new names?",
+    answer:
+      "Yes. Pick a race or class in the dropdowns and the generator will keep those settings when you roll again."
+  },
+  {
+    question: "What does Generate x10 do?",
+    answer:
+      "It produces ten unique names at once so you can scan a batch and save favorites quickly."
+  },
+  {
+    question: "Do you reuse names?",
+    answer:
+      "We avoid repeats by tracking used first names in local storage until you clear them."
+  },
+  {
+    question: "How do saved names work?",
+    answer:
+      "Saved names stay in your session list so you can export them to text or CSV later."
+  }
+];
 
 // ====== UTILITIES ======
 
@@ -315,137 +170,64 @@ const randItem = (arr) =>
     ? arr[Math.floor(Math.random() * arr.length)]
     : undefined;
 
-const abilityMod = (score) => Math.floor((score - 10) / 2);
+const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+  .trim();
 
-const formatMod = (mod) => (mod >= 0 ? `+${mod}` : `${mod}`);
-
-const getProficiencyBonus = (level) => {
-  if (level >= 17) return 6;
-  if (level >= 13) return 5;
-  if (level >= 9) return 4;
-  if (level >= 5) return 3;
-  return 2;
-};
-
-const rollD = (sides) => Math.floor(Math.random() * sides) + 1;
-
-const roll4d6DropLowest = () => {
-  const rolls = [rollD(6), rollD(6), rollD(6), rollD(6)].sort((a, b) => a - b);
-  return rolls.slice(1).reduce((a, b) => a + b, 0);
-};
-
-const generateBaseAbilities = () => ({
-  STR: roll4d6DropLowest(),
-  DEX: roll4d6DropLowest(),
-  CON: roll4d6DropLowest(),
-  INT: roll4d6DropLowest(),
-  WIS: roll4d6DropLowest(),
-  CHA: roll4d6DropLowest()
-});
-
-const normalizeRaceForBonuses = (race) => {
-  if (!race) return "";
-  if (race.includes("Human")) return "Human";
-  if (race.startsWith("Elf")) return "Elf";
-  if (race.startsWith("Dwarf")) return "Dwarf";
-  if (race.startsWith("Halfling")) return "Halfling";
-  if (race.startsWith("Gnome")) return "Gnome";
-  if (race.includes("Half-Elf")) return "Half-Elf";
-  if (race.includes("Half-Orc")) return "Half-Orc";
-  if (race.includes("Dragonborn")) return "Dragonborn";
-  if (race.includes("Tiefling")) return "Tiefling";
-  if (race.includes("Genasi")) return "Genasi";
-  return race;
-};
-
-const applyRacialBonuses = (abilities, raceRaw) => {
-  const a = { ...abilities };
-  const race = normalizeRaceForBonuses(raceRaw);
-
-  switch (race) {
-    case "Human":
-      Object.keys(a).forEach((k) => (a[k] += 1));
-      break;
-    case "Elf":
-      a.DEX += 2;
-      break;
-    case "Half-Elf":
-      a.CHA += 2;
-      a.DEX += 1;
-      a.WIS += 1;
-      break;
-    case "Dwarf":
-      a.CON += 2;
-      break;
-    case "Halfling":
-      a.DEX += 2;
-      break;
-    case "Tiefling":
-      a.CHA += 2;
-      a.INT += 1;
-      break;
-    case "Dragonborn":
-      a.STR += 2;
-      a.CHA += 1;
-      break;
-    case "Half-Orc":
-      a.STR += 2;
-      a.CON += 1;
-      break;
-    case "Gnome":
-      a.INT += 2;
-      break;
-    case "Aasimar":
-      a.CHA += 2;
-      break;
-    case "Genasi":
-      a.CON += 2;
-      break;
-    case "Goliath":
-      a.STR += 2;
-      a.CON += 1;
-      break;
-    default:
-      break;
+const upsertMetaTag = (attr, value, content) => {
+  let tag = document.querySelector(`meta[${attr}="${value}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attr, value);
+    document.head.appendChild(tag);
   }
-  return a;
+  tag.setAttribute("content", content);
 };
 
-const applyASI = (abilities, clazz, level) => {
-  const asiLevels = [4, 8, 12, 16, 19];
-  const numAsi = asiLevels.filter((l) => level >= l).length;
-  if (numAsi === 0) return abilities;
-
-  const result = { ...abilities };
-  const primary = PRIMARY_STAT[clazz] || "STR";
-
-  for (let i = 0; i < numAsi; i++) {
-    if (result[primary] < 20) {
-      result[primary] += 2;
-    } else {
-      const otherKeys = Object.keys(result).filter((k) => k !== primary);
-      const highestOther = otherKeys.reduce(
-        (best, cur) => (result[cur] > result[best] ? cur : best),
-        otherKeys[0]
-      );
-      if (result[highestOther] < 20) {
-        result[highestOther] += 2;
-      }
-    }
+const upsertLinkTag = (rel, href) => {
+  let link = document.querySelector(`link[rel="${rel}"]`);
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", rel);
+    document.head.appendChild(link);
   }
-
-  return result;
+  link.setAttribute("href", href);
 };
 
-const calculateHP = (clazz, level, conMod) => {
-  const hitDie = HIT_DICE[clazz] || 8;
-  const firstLevel = hitDie + conMod;
-  if (level <= 1) return Math.max(1, firstLevel);
-
-  const avgPerLevel = Math.floor(hitDie / 2) + 1 + conMod;
-  const total = firstLevel + (level - 1) * avgPerLevel;
-  return Math.max(1, total);
+const upsertJsonLd = (id, data) => {
+  let script = document.getElementById(id);
+  if (!script) {
+    script = document.createElement("script");
+    script.id = id;
+    script.type = "application/ld+json";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
 };
+
+const buildGeneratorPath = (race, clazz) => {
+  const parts = ["/name-generator"];
+  if (race && race !== "Any Race") {
+    parts.push("race", slugify(race));
+  }
+  if (clazz && clazz !== "Any Class") {
+    parts.push("class", slugify(clazz));
+  }
+  return parts.join("/");
+};
+
+const initialTag = (value) =>
+  value
+    .replace(/\(.*\)/g, "")
+    .split(" ")
+    .map((chunk) => chunk[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
 const randomHometown = () =>
   randItem([
@@ -457,29 +239,6 @@ const randomHometown = () =>
     "the cramped streets of Ashmarket",
     "the riverside town of Whiteford"
   ]);
-
-const genderToPronouns = (gender) => {
-  switch (gender) {
-    case "Female":
-      return { subj: "she", obj: "her", poss: "her", possPron: "hers" };
-    case "Male":
-      return { subj: "he", obj: "him", poss: "his", possPron: "his" };
-    case "Non-binary":
-      return {
-        subj: "they",
-        obj: "them",
-        poss: "their",
-        possPron: "theirs"
-      };
-    default:
-      return {
-        subj: "they",
-        obj: "them",
-        poss: "their",
-        possPron: "theirs"
-      };
-  }
-};
 
 // Generic helper: load lines from a public file
 const loadTextLines = async (path) => {
@@ -496,18 +255,7 @@ const loadTextLines = async (path) => {
   }
 };
 
-// Pick from external pool or fallback
-const pickFromPool = (external, fallback) => {
-  const source =
-    external && external.length > 0
-      ? external
-      : fallback && fallback.length > 0
-      ? fallback
-      : [];
-  return source.length ? randItem(source) : "";
-};
-
-// ====== BACKSTORY & GEAR BUILDERS ======
+// ====== SURNAME BUILDER ======
 
 const generateSurname = (ctx, surnamePools) => {
   const {
@@ -566,154 +314,249 @@ const generateSurname = (ctx, surnamePools) => {
   }
 };
 
-const generateGear = (clazz, gearPools, magicalEffects) => {
-  const pickPool = (external, fallbackKey) => {
-    const fallback = FALLBACK_GEAR[fallbackKey] || [];
-    return external && external.length ? external : fallback;
-  };
+const Logo = () => (
+  <a
+    href="/"
+    className="flex items-center gap-2 text-amber-900 hover:text-amber-700 transition"
+  >
+    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 border border-amber-300 shadow-sm">
+      <Sparkles className="h-5 w-5" />
+    </span>
+    <div className="leading-tight">
+      <p className="text-sm uppercase tracking-[0.3em] text-amber-600">
+        DND
+      </p>
+      <p className="text-base font-semibold">Generatorrr</p>
+    </div>
+  </a>
+);
 
-  let basePoolKey = "martial";
-  switch (clazz) {
-    case "Barbarian":
-    case "Fighter":
-    case "Paladin":
-    case "Ranger":
-    case "Blood Hunter":
-      basePoolKey = "martial";
-      break;
-    case "Rogue":
-    case "Monk":
-      basePoolKey = "stealth";
-      break;
-    case "Wizard":
-    case "Sorcerer":
-    case "Warlock":
-    case "Artificer":
-      basePoolKey = "caster";
-      break;
-    case "Cleric":
-      basePoolKey = "divine";
-      break;
-    case "Druid":
-      basePoolKey = "nature";
-      break;
-    case "Bard":
-      basePoolKey = "caster";
-      break;
-    default:
-      basePoolKey = "martial";
-  }
+const DesktopNav = ({ links }) => (
+  <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-amber-900">
+    {links.map((link) => (
+      <a
+        key={link.label}
+        href={link.href}
+        className="hover:text-amber-700 transition"
+      >
+        {link.label}
+      </a>
+    ))}
+  </nav>
+);
 
-  const martial = pickPool(gearPools.martial, "martial");
-  const stealth = pickPool(gearPools.stealth, "stealth");
-  const caster = pickPool(gearPools.caster, "caster");
-  const divine = pickPool(gearPools.divine, "divine");
-  const nature = pickPool(gearPools.nature, "nature");
-  const trinkets = pickPool(gearPools.trinkets, "trinkets");
+const MobileNavDrawer = ({ isOpen, links, onClose }) => {
+  if (!isOpen) return null;
 
-  let classPool = martial;
-  if (basePoolKey === "stealth") classPool = stealth;
-  if (basePoolKey === "caster") classPool = caster;
-  if (basePoolKey === "divine") classPool = divine;
-  if (basePoolKey === "nature") classPool = nature;
-
-  const gearSet = new Set();
-  const mainCount = 3 + Math.floor(Math.random() * 2); // 3–4
-  while (gearSet.size < mainCount && classPool.length) {
-    gearSet.add(randItem(classPool));
-  }
-
-  const trinketCount = 1 + Math.floor(Math.random() * 2); // 1–2
-  while (gearSet.size < mainCount + trinketCount && trinkets.length) {
-    gearSet.add(randItem(trinkets));
-  }
-
-  const mixedPool = [
-    ...martial,
-    ...caster,
-    ...stealth,
-    ...divine,
-    ...nature,
-    ...trinkets
-  ];
-  if (mixedPool.length) {
-    gearSet.add(randItem(mixedPool));
-  }
-
-  const gear = Array.from(gearSet);
-
-  const effectSource =
-    magicalEffects && magicalEffects.length
-      ? magicalEffects
-      : FALLBACK_MAGICAL_EFFECTS;
-  if (gear.length && effectSource.length) {
-    const idx = Math.floor(Math.random() * gear.length);
-    const effect = randItem(effectSource);
-    gear[idx] = `${gear[idx]} (which sometimes ${effect})`;
-  }
-
-  return gear;
+  return (
+    <div className="fixed inset-0 z-50 flex">
+      <button
+        type="button"
+        aria-label="Close navigation"
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+      <div className="relative z-10 h-full w-72 max-w-[85%] bg-amber-50 shadow-xl border-r border-amber-200 flex flex-col">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-amber-200">
+          <Logo />
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full p-2 text-amber-800 hover:bg-amber-100"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-4 text-base text-amber-900">
+          {links.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              onClick={onClose}
+              className="block font-medium hover:text-amber-700"
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </div>
+  );
 };
 
-const buildBackstory = (context, pools) => {
-  const {
-    adjectives,
-    lifeEvents,
-    villains,
-    professions,
-    motivations,
-    magicalEffects,
-    templates
-  } = pools;
+const PickerDropdown = ({
+  label,
+  items,
+  selectedItem,
+  isOpen,
+  onToggle,
+  onSelect
+}) => (
+  <div className="relative">
+    <button
+      type="button"
+      onClick={onToggle}
+      className="w-full md:w-64 inline-flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 shadow-sm hover:bg-amber-100"
+    >
+      <span>
+        <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+          {label}
+        </span>
+        <span className="block text-base font-semibold">{selectedItem}</span>
+      </span>
+      <ChevronDown
+        className={`h-4 w-4 transition ${isOpen ? "rotate-180" : ""}`}
+      />
+    </button>
+    {isOpen && (
+      <div className="fixed inset-0 z-40 md:absolute md:inset-auto md:top-full md:left-0 md:z-30">
+        <button
+          type="button"
+          aria-label={`Close ${label} picker`}
+          className="absolute inset-0 bg-black/40 md:bg-transparent"
+          onClick={onToggle}
+        />
+        <div className="relative z-10 h-full w-full bg-amber-50 md:h-auto md:w-72 md:mt-3 md:rounded-2xl md:border md:border-amber-200 md:shadow-xl">
+          <div className="flex items-center justify-between border-b border-amber-200 px-4 py-3 md:hidden">
+            <span className="text-sm font-semibold text-amber-900">
+              Choose {label}
+            </span>
+            <button
+              type="button"
+              onClick={onToggle}
+              className="rounded-full p-2 text-amber-800 hover:bg-amber-100"
+              aria-label="Close"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="max-h-[70vh] overflow-y-auto px-4 py-4 md:max-h-80">
+            <div className="space-y-2">
+              {items.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => onSelect(item)}
+                  className="w-full rounded-xl border border-transparent px-3 py-2 text-left hover:border-amber-200 hover:bg-amber-100/60"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center text-xs font-bold">
+                      {initialTag(item)}
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-amber-900">
+                        {item}
+                      </div>
+                      <div className="text-xs text-amber-700">
+                        {item === selectedItem
+                          ? "Currently selected"
+                          : "View themed name sets"}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+);
 
-  const adjectivesSrc = adjectives.length ? adjectives : FALLBACK_ADJECTIVES;
-  const lifeEventsSrc = lifeEvents.length ? lifeEvents : FALLBACK_LIFE_EVENTS;
-  const villainsSrc = villains.length ? villains : FALLBACK_VILLAINS;
-  const professionsSrc = professions.length
-    ? professions
-    : FALLBACK_PROFESSIONS;
-  const motivationsSrc = motivations.length
-    ? motivations
-    : FALLBACK_MOTIVATIONS;
-  const magicalSrc = magicalEffects.length
-    ? magicalEffects
-    : FALLBACK_MAGICAL_EFFECTS;
+const NameRow = ({
+  entry,
+  isSaved,
+  onCopy,
+  onSaveToggle,
+  onRerollSurname
+}) => (
+  <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="text-base font-semibold text-amber-950">{entry.full}</p>
+      <p className="text-xs text-amber-700">
+        {entry.race} · {entry.clazz} · {entry.gender}
+      </p>
+    </div>
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => onCopy(entry.full)}
+        className="inline-flex items-center gap-1 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+      >
+        <Copy className="h-3.5 w-3.5" />
+        Copy
+      </button>
+      <button
+        type="button"
+        onClick={() => onRerollSurname(entry.id)}
+        className="inline-flex items-center gap-1 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+      >
+        <RotateCcw className="h-3.5 w-3.5" />
+        Reroll surname
+      </button>
+      <button
+        type="button"
+        onClick={() => onSaveToggle(entry)}
+        className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold ${
+          isSaved
+            ? "border-amber-500 bg-amber-200 text-amber-900"
+            : "border-amber-200 text-amber-900 hover:bg-amber-100"
+        }`}
+      >
+        <Star className={`h-3.5 w-3.5 ${isSaved ? "fill-current" : ""}`} />
+        {isSaved ? "Saved" : "Save"}
+      </button>
+    </div>
+  </div>
+);
 
-  const templatesSrc = templates.length ? templates : FALLBACK_TEMPLATES;
-  const template = randItem(templatesSrc);
+const FAQSection = ({ items }) => (
+  <section className="max-w-6xl mx-auto px-4 pb-16">
+    <div className="rounded-2xl border border-amber-200 bg-white/80 px-6 py-8 shadow-sm">
+      <h2 className="text-2xl font-semibold text-amber-950 mb-6">
+        Frequently asked questions
+      </h2>
+      <div className="grid gap-6 md:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.question} className="space-y-2">
+            <h3 className="text-sm font-semibold text-amber-900">
+              {item.question}
+            </h3>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              {item.answer}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
-  const pronouns = genderToPronouns(context.gender);
-  const p_subj = pronouns.subj;
-  const p_obj = pronouns.obj;
-  const p_poss = pronouns.poss;
-  const p_possPron = pronouns.possPron;
-  const p_subj_cap = p_subj.charAt(0).toUpperCase() + p_subj.slice(1);
-
-  const replacements = {
-    name: context.name,
-    race: context.race,
-    clazz: context.clazz,
-    level: String(context.level),
-    gender: context.gender,
-    hometown: context.hometown,
-    alignment: context.alignment,
-
-    profession: randItem(professionsSrc),
-    lifeEvent: randItem(lifeEventsSrc),
-    motivation: randItem(motivationsSrc),
-    villain: randItem(villainsSrc),
-    adjective: randItem(adjectivesSrc),
-    magicalEffect: randItem(magicalSrc),
-
-    p_subj,
-    p_obj,
-    p_poss,
-    p_possPron,
-    p_subj_cap
-  };
-
-  return template.replace(/\{(\w+)\}/g, (_, key) => replacements[key] || "");
-};
+const Footer = () => (
+  <footer className="border-t border-amber-200 bg-amber-50/80">
+    <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="text-sm text-amber-700">
+        © 2024 Generatorrr. Roll responsibly.
+      </div>
+      <div className="flex flex-wrap gap-4 text-sm font-medium text-amber-900">
+        <a href="/about" className="hover:text-amber-700">
+          About
+        </a>
+        <a href="/resources" className="hover:text-amber-700">
+          Resources
+        </a>
+        <a href="/sitemap.xml" className="hover:text-amber-700">
+          Sitemap
+        </a>
+        <a href="/privacy" className="hover:text-amber-700">
+          Privacy
+        </a>
+      </div>
+    </div>
+  </footer>
+);
 
 // ====== MAIN APP COMPONENT ======
 
@@ -721,7 +564,6 @@ export default function App() {
   const [namesPool, setNamesPool] = useState([]);
   const [loadingNames, setLoadingNames] = useState(true);
   const [loadingRandomData, setLoadingRandomData] = useState(true);
-  const [character, setCharacter] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -729,16 +571,12 @@ export default function App() {
   const [selectedGender, setSelectedGender] = useState("Any");
   const [selectedRace, setSelectedRace] = useState("Any Race");
   const [selectedClass, setSelectedClass] = useState("Any Class");
-  const [selectedLevel, setSelectedLevel] = useState("Random");
+  const [selectedRegion, setSelectedRegion] = useState("Any Region");
 
-  // External random data pools
-  const [adjectives, setAdjectives] = useState([]);
-  const [lifeEvents, setLifeEvents] = useState([]);
-  const [villains, setVillains] = useState([]);
-  const [professions, setProfessions] = useState([]);
-  const [motivations, setMotivations] = useState([]);
-  const [magicalEffects, setMagicalEffects] = useState([]);
-  const [templates, setTemplates] = useState([]);
+  const [generatedNames, setGeneratedNames] = useState([]);
+  const [savedNames, setSavedNames] = useState([]);
+  const [openPicker, setOpenPicker] = useState(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const [surnamePrefixes, setSurnamePrefixes] = useState([]);
   const [surnameSuffixes, setSurnameSuffixes] = useState([]);
@@ -746,12 +584,55 @@ export default function App() {
   const [surnameElemental, setSurnameElemental] = useState([]);
   const [surnameNoble, setSurnameNoble] = useState([]);
 
-  const [gearMartial, setGearMartial] = useState([]);
-  const [gearCaster, setGearCaster] = useState([]);
-  const [gearStealth, setGearStealth] = useState([]);
-  const [gearDivine, setGearDivine] = useState([]);
-  const [gearNature, setGearNature] = useState([]);
-  const [gearTrinkets, setGearTrinkets] = useState([]);
+  const anyLoading = loadingNames || loadingRandomData;
+
+  const raceSlugMap = useMemo(
+    () => new Map(RACES.map((race) => [slugify(race), race])),
+    []
+  );
+  const classSlugMap = useMemo(
+    () => new Map(CLASSES.map((clazz) => [slugify(clazz), clazz])),
+    []
+  );
+
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+        setOpenPicker(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    const raceIndex = segments.indexOf("race");
+    const classIndex = segments.indexOf("class");
+
+    if (raceIndex !== -1 && segments[raceIndex + 1]) {
+      const race = raceSlugMap.get(segments[raceIndex + 1]);
+      if (race) setSelectedRace(race);
+    }
+
+    if (classIndex !== -1 && segments[classIndex + 1]) {
+      const clazz = classSlugMap.get(segments[classIndex + 1]);
+      if (clazz) setSelectedClass(clazz);
+    }
+  }, [raceSlugMap, classSlugMap]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const nextPath = buildGeneratorPath(selectedRace, selectedClass);
+    if (window.location.pathname !== nextPath) {
+      window.history.replaceState({}, "", nextPath);
+    }
+  }, [selectedRace, selectedClass]);
 
   // Load names from names-extra.txt
   useEffect(() => {
@@ -786,80 +667,19 @@ export default function App() {
     const loadRandomData = async () => {
       setLoadingRandomData(true);
       try {
-        const [
-          adj,
-          le,
-          vil,
-          profs,
-          motivs,
-          mag,
-          // backstory templates file (optional, multiple templates separated by "---" lines)
-          templatesRaw,
-          sPre,
-          sSuf,
-          sNat,
-          sElem,
-          sNob,
-          gMartial,
-          gCaster,
-          gStealth,
-          gDivine,
-          gNature,
-          gTrinkets
-        ] = await Promise.all([
-          loadTextLines("/random/backstory/adjectives.txt"),
-          loadTextLines("/random/backstory/life-events.txt"),
-          loadTextLines("/random/backstory/villains.txt"),
-          loadTextLines("/random/backstory/professions.txt"),
-          loadTextLines("/random/backstory/motivations.txt"),
-          loadTextLines("/random/backstory/magical-effects.txt"),
-          (async () => {
-            try {
-              const res = await fetch("/random/backstory/templates.txt");
-              if (!res.ok) return [];
-              const text = await res.text();
-              // Split templates by blank line or --- separator
-              return text
-                .split(/\n-{3,}\n|\n\s*\n/g)
-                .map((t) => t.trim())
-                .filter(Boolean);
-            } catch {
-              return [];
-            }
-          })(),
+        const [sPre, sSuf, sNat, sElem, sNob] = await Promise.all([
           loadTextLines("/random/surnames/prefixes.txt"),
           loadTextLines("/random/surnames/suffixes.txt"),
           loadTextLines("/random/surnames/natural.txt"),
           loadTextLines("/random/surnames/elemental.txt"),
-          loadTextLines("/random/surnames/noble.txt"),
-          loadTextLines("/random/gear/martial.txt"),
-          loadTextLines("/random/gear/caster.txt"),
-          loadTextLines("/random/gear/stealth.txt"),
-          loadTextLines("/random/gear/divine.txt"),
-          loadTextLines("/random/gear/nature.txt"),
-          loadTextLines("/random/gear/trinkets.txt")
+          loadTextLines("/random/surnames/noble.txt")
         ]);
-
-        setAdjectives(adj);
-        setLifeEvents(le);
-        setVillains(vil);
-        setProfessions(profs);
-        setMotivations(motivs);
-        setMagicalEffects(mag);
-        setTemplates(templatesRaw);
 
         setSurnamePrefixes(sPre);
         setSurnameSuffixes(sSuf);
         setSurnameNatural(sNat);
         setSurnameElemental(sElem);
         setSurnameNoble(sNob);
-
-        setGearMartial(gMartial);
-        setGearCaster(gCaster);
-        setGearStealth(gStealth);
-        setGearDivine(gDivine);
-        setGearNature(gNature);
-        setGearTrinkets(gTrinkets);
       } finally {
         setLoadingRandomData(false);
       }
@@ -896,39 +716,89 @@ export default function App() {
       selectedClass === "Any Class"
         ? randItem(CLASSES.slice(1))
         : selectedClass;
-    const level =
-      selectedLevel === "Random"
-        ? Math.floor(Math.random() * 20) + 1
-        : parseInt(selectedLevel, 10);
     const gender =
       selectedGender === "Any" ? randItem(GENDERS.slice(1)) : selectedGender;
 
-    return { race, clazz, level, gender };
+    return { race, clazz, gender };
   };
 
-  const buildCharacter = ({ keepName = false } = {}) => {
+  const createNameEntry = () => {
+    const firstName = getUniqueFirstName();
+    if (!firstName) return null;
+
+    const { race, clazz, gender } = resolveOptions();
+    const hometown = randomHometown();
+    const surname = generateSurname(
+      { race, clazz, hometown },
+      {
+        surnamePrefixes,
+        surnameSuffixes,
+        surnameNatural,
+        surnameElemental,
+        surnameNoble
+      }
+    );
+
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+    return {
+      id,
+      firstName,
+      surname,
+      full: `${firstName} ${surname}`,
+      race,
+      clazz,
+      gender,
+      hometown,
+      region: selectedRegion
+    };
+  };
+
+  const handleGenerate = (count) => {
     setError("");
     setBusy(true);
 
     setTimeout(() => {
-      let firstName = null;
-      let fullName = character?.name || "";
-
-      if (!keepName) {
-        firstName = getUniqueFirstName();
-        if (!firstName) {
-          setBusy(false);
-          return;
-        }
+      const next = [];
+      for (let i = 0; i < count; i += 1) {
+        const entry = createNameEntry();
+        if (!entry) break;
+        next.push(entry);
       }
+      if (next.length) {
+        setGeneratedNames(next);
+      }
+      setBusy(false);
+    }, 200);
+  };
 
-      const { race, clazz, level, gender } = resolveOptions();
-      const alignment = randItem(ALIGNMENTS);
-      const hometown = randomHometown();
+  const handleCopy = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (copyError) {
+      console.warn("Clipboard copy failed", copyError);
+    }
+  };
 
-      if (!keepName) {
+  const handleToggleSave = (entry) => {
+    setSavedNames((prev) => {
+      const exists = prev.some((item) => item.id === entry.id);
+      if (exists) {
+        return prev.filter((item) => item.id !== entry.id);
+      }
+      return [...prev, entry];
+    });
+  };
+
+  const handleRerollSurname = (entryId) => {
+    setGeneratedNames((prev) =>
+      prev.map((entry) => {
+        if (entry.id !== entryId) return entry;
         const surname = generateSurname(
-          { race, clazz, hometown },
+          { race: entry.race, clazz: entry.clazz, hometown: entry.hometown },
           {
             surnamePrefixes,
             surnameSuffixes,
@@ -937,429 +807,355 @@ export default function App() {
             surnameNoble
           }
         );
-        fullName = `${firstName} ${surname}`;
+        return {
+          ...entry,
+          surname,
+          full: `${entry.firstName} ${surname}`
+        };
+      })
+    );
+  };
+
+  const handleExport = (format) => {
+    if (!savedNames.length) return;
+    const rows = savedNames.map((entry) => entry.full);
+    const content =
+      format === "csv"
+        ? `Name\n${rows.map((name) => `"${name}"`).join("\n")}`
+        : rows.join("\n");
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download =
+      format === "csv" ? "saved-names.csv" : "saved-names.txt";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const canonicalUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}${window.location.pathname}`
+      : "";
+
+  const softwareJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "D&D Name Generator",
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    description:
+      "Generate Dungeons & Dragons character names by class, race, and gender with instant copy and save tools.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    }
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
       }
-
-      const baseAbilities = generateBaseAbilities();
-      const racialAbilities = applyRacialBonuses(baseAbilities, race);
-      const finalAbilities = applyASI(racialAbilities, clazz, level);
-
-      const mods = Object.fromEntries(
-        Object.entries(finalAbilities).map(([k, v]) => [k, abilityMod(v)])
-      );
-
-      const hp = calculateHP(clazz, level, mods.CON);
-      const proficiencyBonus = getProficiencyBonus(level);
-
-      const gear = generateGear(
-        clazz,
-        {
-          martial: gearMartial,
-          caster: gearCaster,
-          stealth: gearStealth,
-          divine: gearDivine,
-          nature: gearNature,
-          trinkets: gearTrinkets
-        },
-        magicalEffects
-      );
-
-      const backstory = buildBackstory(
-        { name: fullName, race, clazz, level, gender, hometown, alignment },
-        {
-          adjectives,
-          lifeEvents,
-          villains,
-          professions,
-          motivations,
-          magicalEffects,
-          templates
-        }
-      );
-
-      const newCharacter = {
-        name: fullName,
-        gender,
-        race,
-        clazz,
-        level,
-        alignment,
-        abilities: finalAbilities,
-        mods,
-        hp,
-        proficiencyBonus,
-        gear,
-        backstory, // still generated, just not displayed
-        hometown
-      };
-
-      setCharacter(newCharacter);
-      setBusy(false);
-    }, 250);
+    }))
   };
 
-  const handleFullyRandom = () => {
-    const randomRace = randItem(RACES.slice(1));
-    const randomClass = randItem(CLASSES.slice(1));
-    const randomGender = randItem(GENDERS.slice(1));
-    const randomLevel = (Math.floor(Math.random() * 20) + 1).toString();
+  useEffect(() => {
+    document.title = "D&D Name Generator | Generatorrr";
 
-    setSelectedRace(randomRace);
-    setSelectedClass(randomClass);
-    setSelectedGender(randomGender);
-    setSelectedLevel(randomLevel);
-    buildCharacter();
-  };
+    const description =
+      "Generate Dungeons & Dragons character names by class, race, and gender. Save favorites, copy instantly, and export your list.";
 
-  const handleUseSettings = () => {
-    buildCharacter();
-  };
+    upsertMetaTag("name", "description", description);
+    upsertMetaTag("property", "og:title", "D&D Name Generator");
+    upsertMetaTag(
+      "property",
+      "og:description",
+      "Pick a class, race, and gender, then generate D&D names instantly with save and export tools."
+    );
+    upsertMetaTag("property", "og:type", "website");
+    upsertMetaTag("name", "twitter:card", "summary_large_image");
 
-  const handleRerollKeepingName = () => {
-    if (!character) return;
-    buildCharacter({ keepName: true });
-  };
+    if (canonicalUrl) {
+      upsertLinkTag("canonical", canonicalUrl);
+      upsertMetaTag("property", "og:url", canonicalUrl);
+    }
 
-  const anyLoading = loadingNames || loadingRandomData;
+    upsertJsonLd("jsonld-software", softwareJsonLd);
+    upsertJsonLd("jsonld-faq", faqJsonLd);
+  }, [canonicalUrl, softwareJsonLd, faqJsonLd]);
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-amber-100 via-amber-100 to-amber-200 text-stone-900 flex items-center justify-center p-4 md:p-6"
+      className="min-h-screen flex flex-col bg-gradient-to-b from-amber-50 via-amber-100/70 to-amber-200 text-stone-900"
       style={{ fontFamily: '"Crimson Pro", system-ui, -apple-system, serif' }}
     >
-      <div className="max-w-6xl w-full border border-amber-800/40 rounded-2xl shadow-[0_0_0_1px_rgba(120,53,15,0.45),0_18px_40px_rgba(88,28,13,0.45)] bg-amber-50/70 backdrop-blur-sm px-3 py-4 md:px-6 md:py-6">
-        {/* Header */}
-        <header className="mb-5 text-center border-b border-amber-900/40 pb-3">
-          <h1
-            className="text-3xl md:text-4xl font-bold tracking-widest text-amber-900 drop-shadow-sm"
-            style={{ fontFamily: '"Eagle Lake", serif' }}
+      <header className="sticky top-0 z-40 border-b border-amber-200 bg-amber-50/95 backdrop-blur shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <Logo />
+          <DesktopNav links={NAV_LINKS} />
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen(true)}
+            className="lg:hidden rounded-lg border border-amber-200 p-2 text-amber-900 hover:bg-amber-100"
+            aria-label="Open navigation"
           >
-            D&amp;D Character Generator
-          </h1>
-          <p className="mt-2 text-xs md:text-sm text-stone-800/80 max-w-2xl mx-auto leading-relaxed">
-            Quickly generate D&amp;D characters with unique names,
-            stats and starting gear.
-          </p>
-        </header>
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
 
-        <div className="grid gap-4 md:gap-6 md:grid-cols-[minmax(0,1.05fr)_minmax(0,1.65fr)]">
-          {/* Left: Control scroll */}
-          <section className="relative">
-            {/* "Old internet" tack pins */}
-            <div className="absolute -top-3 left-6 w-6 h-6 rounded-full bg-amber-900 shadow-md border border-amber-700/90" />
-            <div className="absolute -top-3 right-6 w-6 h-6 rounded-full bg-amber-900 shadow-md border border-amber-700/90" />
+      <MobileNavDrawer
+        isOpen={isMobileNavOpen}
+        links={NAV_LINKS}
+        onClose={() => setIsMobileNavOpen(false)}
+      />
 
-            <div className="bg-gradient-to-b from-amber-50 via-amber-100/95 to-amber-50 text-stone-900 border border-amber-800/70 rounded-xl shadow-[0_8px_0_rgba(120,53,15,0.55)] px-4 py-5 md:px-5 md:py-6 relative overflow-hidden">
-              {/* Faux scroll edges */}
-              <div className="absolute inset-x-6 top-0 h-1 border-b border-amber-900/50" />
-              <div className="absolute inset-x-4 bottom-0 h-1 border-t border-amber-900/40" />
-              <div className="absolute inset-y-4 left-2 w-px bg-amber-900/30" />
-              <div className="absolute inset-y-4 right-2 w-px bg-amber-900/30" />
-
-              <h2
-                className="relative text-base md:text-lg font-semibold text-amber-900 mb-3 tracking-wide"
-                style={{ fontFamily: '"Eagle Lake", serif' }}
-              >
-                Summoning Ritual
-              </h2>
-
-              {error && (
-                <div className="relative mb-3 rounded-lg border border-red-700/80 bg-red-50/95 px-3 py-2 text-xs text-red-900 shadow-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="space-y-3 text-xs md:text-sm relative">
-                {/* Gender */}
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-950/90">
-                    Gender
-                  </label>
-                  <select
-                    value={selectedGender}
-                    onChange={(e) => setSelectedGender(e.target.value)}
-                    className="rounded-[3px] border border-amber-800/60 bg-amber-50/90 px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-amber-900 shadow-inner"
-                  >
-                    {GENDERS.map((g) => (
-                      <option key={g} value={g}>
-                        {g}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Race */}
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-950/90">
-                    Race
-                  </label>
-                  <select
-                    value={selectedRace}
-                    onChange={(e) => setSelectedRace(e.target.value)}
-                    className="rounded-[3px] border border-amber-800/60 bg-amber-50/90 px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-amber-900 shadow-inner"
-                  >
-                    {RACES.map((r) => (
-                      <option key={r} value={r}>
-                        {r}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Class */}
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-950/90">
-                    Class
-                  </label>
-                  <select
-                    value={selectedClass}
-                    onChange={(e) => setSelectedClass(e.target.value)}
-                    className="rounded-[3px] border border-amber-800/60 bg-amber-50/90 px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-amber-900 shadow-inner"
-                  >
-                    {CLASSES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Level */}
-                <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-amber-950/90 flex items-center justify-between">
-                    <span>Level</span>
-                    {selectedLevel !== "Random" && (
-                      <span className="text-[10px] md:text-xs text-amber-900/80">
-                        {selectedLevel}
-                      </span>
-                    )}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    <select
-                      value={selectedLevel}
-                      onChange={(e) => setSelectedLevel(e.target.value)}
-                      className="w-28 rounded-[3px] border border-amber-800/60 bg-amber-50/90 px-2 py-1 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-amber-700 focus:border-amber-900 shadow-inner"
-                    >
-                      <option value="Random">Random (1–20)</option>
-                      {Array.from({ length: 20 }).map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="text-[10px] md:text-xs text-amber-900/70">
-                     
-                    </span>
-                  </div>
-                </div>
-
-                {/* Buttons */}
-                <div className="pt-2 mt-1 border-t border-amber-800/60 flex flex-col gap-2">
-                  {/* Primary: Generate (Use My Settings) */}
-                  <button
-                    type="button"
-                    onClick={handleUseSettings}
-                    disabled={anyLoading || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold tracking-wide uppercase border
-                      ${
-                        anyLoading || busy
-                          ? "bg-amber-300/70 text-amber-950/60 border-amber-700/60 cursor-not-allowed"
-                          : "bg-amber-800 text-amber-50 border-amber-950 hover:bg-amber-700 hover:shadow-md hover:shadow-amber-900/50 transition"
-                      }`}
-                  >
-                    {anyLoading
-                      ? "Loading scrolls..."
-                      : busy
-                      ? "Inscribing hero..."
-                      : "Generate"}
-                  </button>
-
-                  {/* Secondary: Randomize (Fully Random Hero) */}
-                  <button
-                    type="button"
-                    onClick={handleFullyRandom}
-                    disabled={anyLoading || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-xs md:text-sm font-semibold tracking-wide uppercase border
-                      ${
-                        anyLoading || busy
-                          ? "bg-amber-100/80 text-amber-900/50 border-amber-400/80 cursor-not-allowed"
-                          : "bg-amber-50/95 text-amber-950 border-amber-700/70 hover:bg-amber-100/95 hover:shadow-sm"
-                      }`}
-                  >
-                    Randomize
-                  </button>
-
-                  {/* Re-roll stats keep name */}
-                  <button
-                    type="button"
-                    onClick={handleRerollKeepingName}
-                    disabled={!character || busy}
-                    className={`w-full rounded-md px-3 py-1.5 text-[11px] md:text-xs font-medium border
-                      ${
-                        !character || busy
-                          ? "bg-amber-50/60 text-amber-900/35 border-amber-300/80 cursor-not-allowed"
-                          : "bg-transparent border-amber-500/70 text-amber-900 hover:bg-amber-50/80"
-                      }`}
-                  >
-                    Re-roll Stats (Keep Name)
-                  </button>
-                </div>
-
-                <p className="text-[10px] md:text-xs text-amber-900/80 border-t border-dotted border-amber-800/60 mt-2 pt-2 leading-snug">
-                  
-                </p>
-              </div>
+      <main className="flex-1">
+        <section className="max-w-6xl mx-auto px-4 py-10">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-amber-600">
+                Name Generator
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold text-amber-950">
+                Build a hero name in seconds.
+              </h1>
+              <p className="mt-2 text-sm text-amber-700 max-w-2xl">
+                Pick a class or race, roll a batch of names, and keep the ones
+                you love. Your selections update the URL for fast sharing and
+                SEO-friendly browsing.
+              </p>
             </div>
-          </section>
+            <div className="flex items-center gap-2 text-xs text-amber-700">
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white/70 px-3 py-1">
+                <Wand2 className="h-3.5 w-3.5" />
+                {generatedNames.length || 0} results
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white/70 px-3 py-1">
+                <Star className="h-3.5 w-3.5" />
+                {savedNames.length} saved
+              </span>
+            </div>
+          </div>
 
-          {/* Right: Character sheet */}
-          <section className="bg-amber-50/80 border border-amber-800/60 rounded-2xl shadow-[0_10px_0_rgba(120,53,15,0.55)] px-4 py-4 md:px-6 md:py-5 relative overflow-hidden">
-            {/* Faint "old net" grid overlay */}
-            <div className="pointer-events-none absolute inset-3 border border-amber-800/20 rounded-xl" />
-            {!character ? (
-              <div className="h-full flex items-center justify-center text-center text-sm md:text-base text-stone-800/80 relative">
-                {/* PLACEHOLDER MESSAGE */}
-              </div>
-            ) : (
-              <div className="space-y-5 relative">
-                {/* Identity */}
-                <div className="border-b border-amber-900/50 pb-3">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2
-                      className="text-2xl md:text-3xl font-bold text-amber-950 drop-shadow-sm"
-                      style={{
-                        fontFamily: '"Eagle Lake", serif'
-                      }}
-                    >
-                      {character.name}
-                    </h2>
-                    <span className="text-xs md:text-sm uppercase tracking-wide text-amber-900/90 text-right bg-amber-200/70 px-2 py-0.5 rounded border border-amber-800/70">
-                      Level {character.level} {character.race}{" "}
-                      {character.clazz}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-xs md:text-sm text-stone-900 flex flex-wrap gap-x-4 gap-y-1">
-                    <span>
-                      <span className="font-semibold text-amber-950">
-                        Gender:
-                      </span>{" "}
-                      {character.gender}
-                    </span>
-                    <span>
-                      <span className="font-semibold text-amber-950">
-                        Alignment:
-                      </span>{" "}
-                      {character.alignment}
-                    </span>
-                    <span>
-                      <span className="font-semibold text-amber-950">
-                        Hometown:
-                      </span>{" "}
-                      {character.hometown}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stats & combat */}
-                <div className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-4">
-                  <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
-                    <h3
-                      className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                      style={{
-                        fontFamily: '"Eagle Lake", serif'
-                      }}
-                    >
-                      Ability Scores
-                    </h3>
-                    <div className="grid grid-cols-3 gap-2 text-xs md:text-sm">
-                      {["STR", "DEX", "CON", "INT", "WIS", "CHA"].map((stat) => (
-                        <div
-                          key={stat}
-                          className="bg-amber-100/90 rounded-lg px-2.5 py-2 flex flex-col items-center justify-center border border-amber-800/60 shadow-inner"
-                        >
-                          <span className="text-[11px] font-semibold text-amber-950 tracking-wide">
-                            {stat}
-                          </span>
-                          <span className="text-sm md:text-base font-bold text-stone-900">
-                            {character.abilities[stat]}
-                          </span>
-                          <span className="text-[10px] text-amber-900/80">
-                            {formatMod(character.mods[stat])}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 flex flex-col justify-between shadow-sm">
-                    <div>
-                      <h3
-                        className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                        style={{
-                          fontFamily: '"Eagle Lake", serif'
-                        }}
-                      >
-                        Combat Summary
-                      </h3>
-                      <div className="space-y-1 text-xs md:text-sm text-stone-900">
-                        <p>
-                          <span className="font-semibold text-amber-950">
-                            Hit Points:
-                          </span>{" "}
-                          {character.hp}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-amber-950">
-                            Proficiency Bonus:
-                          </span>{" "}
-                          {formatMod(character.proficiencyBonus)}
-                        </p>
-                        <p className="text-amber-900/80 text-[11px] md:text-xs mt-1 leading-snug">
-                          HP and proficiency follow 5e-style rules: max at 1st
-                          level, average per level thereafter, plus Constitution
-                          modifier.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Gear */}
-                <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
-                  <h3
-                    className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                    style={{ fontFamily: '"Eagle Lake", serif' }}
-                  >
-                    Starting Gear
-                  </h3>
-                  <ul className="list-disc list-inside text-xs md:text-sm text-stone-900 space-y-0.5">
-                    {character.gear.map((item, idx) => (
-                      <li key={idx}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Backstory section intentionally hidden from UI.
-                    The backstory is still generated and stored on character.backstory
-                    if you want to re-enable it later, you can uncomment this block:
-
-                <div className="bg-amber-50/90 border border-amber-800/60 rounded-xl px-3 py-3 md:px-4 md:py-4 shadow-sm">
-                  <h3
-                    className="text-sm md:text-base font-semibold text-amber-950 mb-2 tracking-wide"
-                    style={{ fontFamily: '"Eagle Lake", serif' }}
-                  >
-                    Backstory
-                  </h3>
-                  <p className="text-xs md:text-sm text-stone-900 leading-relaxed whitespace-pre-line">
-                    {character.backstory}
-                  </p>
-                </div>
-                */}
+          <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 shadow-sm">
+            {error && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
               </div>
             )}
-          </section>
-        </div>
-      </div>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex flex-col gap-4 md:flex-row md:flex-wrap">
+                <PickerDropdown
+                  label="Classes"
+                  items={CLASSES}
+                  selectedItem={selectedClass}
+                  isOpen={openPicker === "class"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "class" ? null : "class"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedClass(value);
+                    setOpenPicker(null);
+                  }}
+                />
+                <PickerDropdown
+                  label="Races"
+                  items={RACES}
+                  selectedItem={selectedRace}
+                  isOpen={openPicker === "race"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "race" ? null : "race"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedRace(value);
+                    setOpenPicker(null);
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+                    Gender
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {GENDERS.map((gender) => (
+                      <button
+                        key={gender}
+                        type="button"
+                        onClick={() => setSelectedGender(gender)}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                          selectedGender === gender
+                            ? "border-amber-500 bg-amber-200 text-amber-900"
+                            : "border-amber-200 bg-white/70 text-amber-700 hover:bg-amber-100"
+                        }`}
+                      >
+                        {gender}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+                    Region
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {REGIONS.map((region) => (
+                      <button
+                        key={region}
+                        type="button"
+                        onClick={() => setSelectedRegion(region)}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                          selectedRegion === region
+                            ? "border-amber-500 bg-amber-200 text-amber-900"
+                            : "border-amber-200 bg-white/70 text-amber-700 hover:bg-amber-100"
+                        }`}
+                      >
+                        {region}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(1)}
+                  disabled={anyLoading || busy}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl border border-amber-800 px-4 py-2 text-sm font-semibold transition ${
+                    anyLoading || busy
+                      ? "bg-amber-200 text-amber-600"
+                      : "bg-amber-800 text-amber-50 hover:bg-amber-700"
+                  }`}
+                >
+                  {anyLoading ? "Loading..." : busy ? "Generating..." : "Generate"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleGenerate(10)}
+                  disabled={anyLoading || busy}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl border border-amber-200 px-4 py-2 text-sm font-semibold transition ${
+                    anyLoading || busy
+                      ? "bg-amber-100 text-amber-500"
+                      : "bg-white/80 text-amber-900 hover:bg-amber-100"
+                  }`}
+                >
+                  Generate x10
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-amber-950">
+                  Generated names
+                </h2>
+                <span className="text-xs text-amber-600">
+                  {generatedNames.length} results
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {generatedNames.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-amber-200 px-4 py-10 text-center text-sm text-amber-700">
+                    Pick a class and race, then hit Generate to see names here.
+                  </div>
+                ) : (
+                  generatedNames.map((entry) => (
+                    <NameRow
+                      key={entry.id}
+                      entry={entry}
+                      isSaved={savedNames.some((item) => item.id === entry.id)}
+                      onCopy={handleCopy}
+                      onSaveToggle={handleToggleSave}
+                      onRerollSurname={handleRerollSurname}
+                    />
+                  ))
+                )}
+              </div>
+            </section>
+
+            <aside className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-amber-950">
+                  Saved names
+                </h2>
+                <span className="text-xs text-amber-600">
+                  {savedNames.length} saved
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {savedNames.length === 0 ? (
+                  <p className="text-sm text-amber-700">
+                    Save a name to collect your favorites here.
+                  </p>
+                ) : (
+                  savedNames.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-amber-900">
+                          {entry.full}
+                        </p>
+                        <p className="text-[11px] text-amber-600">
+                          {entry.race} · {entry.clazz}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSave(entry)}
+                        className="text-xs text-amber-700 hover:text-amber-900"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleExport("txt")}
+                  disabled={!savedNames.length}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export TXT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport("csv")}
+                  disabled={!savedNames.length}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export CSV
+                </button>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <FAQSection items={FAQ_ITEMS} />
+      </main>
+
+      <Footer />
     </div>
   );
 }

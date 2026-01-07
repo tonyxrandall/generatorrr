@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import {
   ChevronDown,
   Copy,
@@ -71,6 +72,17 @@ const CLASSES = [
 
 const GENDERS = ["Any", "Female", "Male", "Non-binary", "Other"];
 const REGIONS = ["Any Region", "Forgotten Realms", "Eberron", "Ravenloft"];
+const ALIGNMENTS = [
+  "Lawful Good",
+  "Neutral Good",
+  "Chaotic Good",
+  "Lawful Neutral",
+  "True Neutral",
+  "Chaotic Neutral",
+  "Lawful Evil",
+  "Neutral Evil",
+  "Chaotic Evil"
+];
 
 // Fallback surnames
 const FALLBACK_SURNAME_PREFIXES = [
@@ -140,6 +152,89 @@ const NAV_LINKS = [
   { label: "DM Tools", href: "/dm-tools" }
 ];
 
+const SPELLCASTING_ABILITY = {
+  Artificer: "INT",
+  Bard: "CHA",
+  Cleric: "WIS",
+  Druid: "WIS",
+  Paladin: "CHA",
+  Ranger: "WIS",
+  Sorcerer: "CHA",
+  Warlock: "CHA",
+  Wizard: "INT"
+};
+
+// Gear fallback pools (used if external files are missing)
+const FALLBACK_GEAR = {
+  martial: [
+    "longsword",
+    "greatsword",
+    "battleaxe",
+    "warhammer",
+    "shield",
+    "chain mail",
+    "javelins",
+    "crossbow with bolts",
+    "traveler's clothes",
+    "backpack with rations",
+    "whetstone",
+    "inscribed family crest",
+    "trophy taken from a fallen foe"
+  ],
+  stealth: [
+    "shortsword",
+    "daggers",
+    "shortbow with arrows",
+    "leather armor",
+    "thieves’ tools",
+    "dark hooded cloak",
+    "set of weighted dice",
+    "lockpicks wrapped in cloth",
+    "soft-soled boots",
+    "small vial of poison",
+    "ring of unknown origin"
+  ],
+  caster: [
+    "spellbook",
+    "arcane focus",
+    "component pouch",
+    "simple dagger",
+    "scholar's robes",
+    "ink and quill",
+    "bundle of candles",
+    "mysterious scroll",
+    "tiny crystal vial of starlight",
+    "charred fragment of an old grimoire"
+  ],
+  divine: [
+    "holy symbol",
+    "mace",
+    "shield embossed with a symbol of faith",
+    "chain shirt",
+    "prayer book",
+    "incense and censer",
+    "vestments",
+    "bottle of blessed water",
+    "wooden charm from a grateful villager"
+  ],
+  nature: [
+    "quarterstaff",
+    "scimitar",
+    "leather armor",
+    "herbalism kit",
+    "druidic totem",
+    "bundle of dried herbs",
+    "cloak smelling faintly of pine",
+    "animal-bone necklace",
+    "small carved wooden animal"
+  ],
+  trinkets: [
+    "lucky coin",
+    "feather charm",
+    "broken compass",
+    "engraved locket"
+  ]
+};
 const FAQ_ITEMS = [
   {
     question: "Can I lock a race or class and still generate new names?",
@@ -160,6 +255,52 @@ const FAQ_ITEMS = [
     question: "How do saved names work?",
     answer:
       "Saved names stay in your session list so you can export them to text or CSV later."
+  }
+];
+
+const NAV_LINKS = [
+  { label: "Name Generator", href: "/name-generator" },
+  { label: "Character Generator", href: "/character-generator" },
+  { label: "Dice Roller", href: "/dice-roller" },
+  { label: "NPC Generator", href: "/npc-generator" },
+  { label: "DM Tools", href: "/dm-tools" }
+];
+
+const FAQ_ITEMS = [
+  {
+    question: "How are ability scores generated?",
+    answer:
+      "Each ability score rolls 4d6 and drops the lowest die, then racial bonuses and ASI boosts are applied."
+  },
+  {
+    question: "Which races get bonuses in this generator?",
+    answer:
+      "The generator applies the race bonuses coded for core race families like human, elf, dwarf, halfling, gnome, dragonborn, tiefling, and more."
+  },
+  {
+    question: "When do ability score increases (ASI) apply?",
+    answer:
+      "ASI bonuses apply at levels 4, 8, 12, 16, and 19, boosting the primary class stat up to 20."
+  },
+  {
+    question: "How are hit points calculated?",
+    answer:
+      "HP uses max hit die at level 1, then average per level afterward, plus the Constitution modifier."
+  },
+  {
+    question: "How is proficiency bonus handled?",
+    answer:
+      "Proficiency bonus follows standard 5e scaling based on character level."
+  },
+  {
+    question: "Does this follow 5e-style rules?",
+    answer:
+      "Yes, it follows 5e-style rules for ability rolls, modifiers, HP, proficiency, and derived stats."
+  },
+  {
+    question: "Do I need to download anything?",
+    answer:
+      "No downloads required—everything runs in your browser."
   }
 ];
 
@@ -208,6 +349,63 @@ const upsertJsonLd = (id, data) => {
   }
   script.textContent = JSON.stringify(data);
 };
+
+const applyASI = (abilities, clazz, level) => {
+  const asiLevels = [4, 8, 12, 16, 19];
+  const numAsi = asiLevels.filter((l) => level >= l).length;
+  if (numAsi === 0) return abilities;
+
+  const result = { ...abilities };
+  const primary = PRIMARY_STAT[clazz] || "STR";
+
+  for (let i = 0; i < numAsi; i += 1) {
+    if (result[primary] < 20) {
+      result[primary] += 2;
+    } else {
+      const otherKeys = Object.keys(result).filter((k) => k !== primary);
+      const highestOther = otherKeys.reduce(
+        (best, cur) => (result[cur] > result[best] ? cur : best),
+        otherKeys[0]
+      );
+      if (result[highestOther] < 20) {
+        result[highestOther] += 2;
+      }
+    }
+const buildGeneratorPath = (race, clazz) => {
+  const parts = ["/name-generator"];
+  if (race && race !== "Any Race") {
+    parts.push("race", slugify(race));
+  }
+  if (clazz && clazz !== "Any Class") {
+    parts.push("class", slugify(clazz));
+  }
+  return parts.join("/");
+};
+
+const initialTag = (value) =>
+  value
+    .replace(/\(.*\)/g, "")
+    .split(" ")
+    .map((chunk) => chunk[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+const speedFromRace = (race) => {
+  if (!race) return 30;
+  if (race.includes("Dwarf")) return 25;
+  if (race.includes("Halfling")) return 25;
+  if (race.includes("Gnome")) return 25;
+  return 30;
+};
+
+const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+  .trim();
 
 const buildGeneratorPath = (race, clazz) => {
   const parts = ["/name-generator"];
@@ -312,6 +510,109 @@ const generateSurname = (ctx, surnamePools) => {
       return pre + suf;
     }
   }
+};
+
+const generateGear = (clazz, gearPools) => {
+  const pickPool = (external, fallbackKey) => {
+    const fallback = FALLBACK_GEAR[fallbackKey] || [];
+    return external && external.length ? external : fallback;
+  };
+
+  let basePoolKey = "martial";
+  switch (clazz) {
+    case "Barbarian":
+    case "Fighter":
+    case "Paladin":
+    case "Ranger":
+    case "Blood Hunter":
+      basePoolKey = "martial";
+      break;
+    case "Rogue":
+    case "Monk":
+      basePoolKey = "stealth";
+      break;
+    case "Wizard":
+    case "Sorcerer":
+    case "Warlock":
+    case "Artificer":
+      basePoolKey = "caster";
+      break;
+    case "Cleric":
+      basePoolKey = "divine";
+      break;
+    case "Druid":
+      basePoolKey = "nature";
+      break;
+    case "Bard":
+      basePoolKey = "caster";
+      break;
+    default:
+      basePoolKey = "martial";
+  }
+
+  const martial = pickPool(gearPools.martial, "martial");
+  const stealth = pickPool(gearPools.stealth, "stealth");
+  const caster = pickPool(gearPools.caster, "caster");
+  const divine = pickPool(gearPools.divine, "divine");
+  const nature = pickPool(gearPools.nature, "nature");
+  const trinkets = pickPool(gearPools.trinkets, "trinkets");
+
+  let classPool = martial;
+  if (basePoolKey === "stealth") classPool = stealth;
+  if (basePoolKey === "caster") classPool = caster;
+  if (basePoolKey === "divine") classPool = divine;
+  if (basePoolKey === "nature") classPool = nature;
+
+  const gearSet = new Set();
+  const mainCount = 3 + Math.floor(Math.random() * 2); // 3–4
+  while (gearSet.size < mainCount && classPool.length) {
+    gearSet.add(randItem(classPool));
+  }
+
+  const trinketCount = 1 + Math.floor(Math.random() * 2); // 1–2
+  while (gearSet.size < mainCount + trinketCount && trinkets.length) {
+    gearSet.add(randItem(trinkets));
+  }
+
+  const mixedPool = [
+    ...martial,
+    ...caster,
+    ...stealth,
+    ...divine,
+    ...nature,
+    ...trinkets
+  ];
+  if (mixedPool.length) {
+    gearSet.add(randItem(mixedPool));
+  }
+
+  return Array.from(gearSet);
+};
+
+const getDerivedStats = (entry) => {
+  if (!entry) return null;
+  const initiative = entry.mods.DEX;
+  const passivePerception = 10 + entry.mods.WIS;
+  const speed = speedFromRace(entry.race);
+  const spellAbility = SPELLCASTING_ABILITY[entry.clazz];
+  const spellMod = spellAbility ? entry.mods[spellAbility] : null;
+  const spellcasting =
+    spellAbility && spellMod !== null
+      ? {
+          ability: spellAbility,
+          saveDc: 8 + entry.proficiencyBonus + spellMod,
+          attackBonus: entry.proficiencyBonus + spellMod
+        }
+      : null;
+
+  return {
+    hp: entry.hp,
+    proficiencyBonus: entry.proficiencyBonus,
+    initiative,
+    passivePerception,
+    speed,
+    spellcasting
+  };
 };
 
 const Logo = () => (
@@ -468,10 +769,42 @@ const PickerDropdown = ({
 const NameRow = ({
   entry,
   isSaved,
+  isActive,
+  onSelect,
   onCopy,
   onSaveToggle,
   onRerollSurname
 }) => (
+  <div
+    role="button"
+    tabIndex={0}
+    onClick={() => onSelect(entry.id)}
+    onKeyDown={(event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onSelect(entry.id);
+      }
+    }}
+    className={`w-full text-left rounded-xl border px-4 py-3 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-amber-300 md:flex md:items-center md:justify-between md:gap-4 ${
+      isActive
+        ? "border-amber-400 bg-amber-100/70"
+        : "border-amber-200 bg-white/80 hover:border-amber-300"
+    }`}
+  >
+    <div>
+      <p className="text-base font-semibold text-amber-950">{entry.full}</p>
+      <p className="text-xs text-amber-700">
+        Level {entry.level} · {entry.race} · {entry.clazz} · {entry.gender}
+      </p>
+    </div>
+    <div className="mt-3 flex flex-wrap gap-2 md:mt-0">
+      <button
+        type="button"
+        aria-label={`Copy ${entry.full}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onCopy(entry.full);
+        }}
   <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
     <div>
       <p className="text-base font-semibold text-amber-950">{entry.full}</p>
@@ -490,6 +823,11 @@ const NameRow = ({
       </button>
       <button
         type="button"
+        aria-label={`Reroll surname for ${entry.full}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          onRerollSurname(entry.id);
+        }}
         onClick={() => onRerollSurname(entry.id)}
         className="inline-flex items-center gap-1 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
       >
@@ -498,6 +836,13 @@ const NameRow = ({
       </button>
       <button
         type="button"
+        aria-label={
+          isSaved ? `Remove ${entry.full} from saved` : `Save ${entry.full}`
+        }
+        onClick={(event) => {
+          event.stopPropagation();
+          onSaveToggle(entry);
+        }}
         onClick={() => onSaveToggle(entry)}
         className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold ${
           isSaved
@@ -512,6 +857,195 @@ const NameRow = ({
   </div>
 );
 
+const CharacterSheet = ({
+  entry,
+  derivedStats,
+  onCopyText,
+  onCopyJson,
+  onDownloadText,
+  copiedState
+}) => {
+  if (!entry) {
+    return (
+      <div className="rounded-2xl border border-dashed border-amber-200 bg-white/70 px-4 py-8 text-center text-sm text-amber-700">
+        Choose options and click Generate to create a character sheet.
+      </div>
+    );
+  }
+
+  const resolvedDerived = derivedStats || getDerivedStats(entry);
+  const modifiers = Object.entries(entry.mods).map(([stat, mod]) => ({
+    stat,
+    mod: formatMod(mod)
+  }));
+
+  const spellBlock = resolvedDerived.spellcasting
+    ? [
+        {
+          label: `Spell Save DC (${resolvedDerived.spellcasting.ability})`,
+          value: resolvedDerived.spellcasting.saveDc
+        },
+        {
+          label: `Spell Attack Bonus (${resolvedDerived.spellcasting.ability})`,
+          value: formatMod(resolvedDerived.spellcasting.attackBonus)
+        }
+      ]
+    : [];
+
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
+      <div className="border-b border-amber-200 pb-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-2xl font-semibold text-amber-950">
+            {entry.full}
+          </h2>
+          <span className="text-xs uppercase tracking-wide text-amber-900/90 bg-amber-200/70 px-2 py-1 rounded border border-amber-300">
+            Level {entry.level} {entry.race} {entry.clazz}
+          </span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            aria-label="Copy character as text"
+            onClick={() => onCopyText(entry)}
+            className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            {copiedState === "text" ? "Copied!" : "Copy as Text"}
+          </button>
+          <button
+            type="button"
+            aria-label="Copy character as JSON"
+            onClick={() => onCopyJson(entry)}
+            className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            {copiedState === "json" ? "Copied!" : "Copy as JSON"}
+          </button>
+          <button
+            type="button"
+            aria-label="Download character as text"
+            onClick={() => onDownloadText(entry)}
+            className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Download .txt
+          </button>
+        </div>
+        <div className="mt-2 text-xs text-amber-700 flex flex-wrap gap-x-4 gap-y-1">
+          <span>
+            <span className="font-semibold text-amber-950">Gender:</span>{" "}
+            {entry.gender}
+          </span>
+          <span>
+            <span className="font-semibold text-amber-950">Alignment:</span>{" "}
+            {entry.alignment}
+          </span>
+          <span>
+            <span className="font-semibold text-amber-950">Region:</span>{" "}
+            {entry.region}
+          </span>
+          <span>
+            <span className="font-semibold text-amber-950">Hometown:</span>{" "}
+            {entry.hometown}
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-amber-900">
+        {modifiers.map((item) => (
+          <span
+            key={item.stat}
+            className="rounded-full border border-amber-200 bg-amber-50/80 px-2 py-1"
+          >
+            {item.stat} {item.mod}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+        <div className="bg-amber-50/90 border border-amber-200 rounded-xl px-3 py-3 shadow-sm">
+          <h3 className="text-sm font-semibold text-amber-950 mb-2 tracking-wide">
+            Ability Scores
+          </h3>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            {Object.entries(entry.abilities).map(([stat, value]) => (
+              <div
+                key={stat}
+                className="bg-amber-100/90 rounded-lg px-2 py-2 flex flex-col items-center justify-center border border-amber-200 shadow-inner"
+              >
+                <span className="text-[11px] font-semibold text-amber-950 tracking-wide">
+                  {stat}
+                </span>
+                <span className="text-sm font-bold text-stone-900">
+                  {value}
+                </span>
+                <span className="text-[10px] text-amber-900/80">
+                  {formatMod(entry.mods[stat])}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="bg-amber-50/90 border border-amber-200 rounded-xl px-3 py-3 shadow-sm">
+          <h3 className="text-sm font-semibold text-amber-950 mb-2 tracking-wide">
+            Derived Stats
+          </h3>
+          <div className="space-y-1 text-xs text-stone-900">
+            <p>
+              <span className="font-semibold text-amber-950">Hit Points:</span>{" "}
+              {resolvedDerived.hp}
+            </p>
+            <p>
+              <span className="font-semibold text-amber-950">
+                Proficiency Bonus:
+              </span>{" "}
+              {formatMod(resolvedDerived.proficiencyBonus)}
+            </p>
+            <p>
+              <span className="font-semibold text-amber-950">Initiative:</span>{" "}
+              {formatMod(resolvedDerived.initiative)}
+            </p>
+            <p>
+              <span className="font-semibold text-amber-950">
+                Passive Perception:
+              </span>{" "}
+              {resolvedDerived.passivePerception}
+            </p>
+            <p>
+              <span className="font-semibold text-amber-950">Speed:</span>{" "}
+              {resolvedDerived.speed} ft.
+            </p>
+            {spellBlock.map((item) => (
+              <p key={item.label}>
+                <span className="font-semibold text-amber-950">
+                  {item.label}:
+                </span>{" "}
+                {item.value}
+              </p>
+            ))}
+            <p className="text-amber-900/80 text-[11px] mt-1 leading-snug">
+              HP uses max at level 1 and average per level thereafter, plus
+              Constitution modifier.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 bg-amber-50/90 border border-amber-200 rounded-xl px-3 py-3 shadow-sm">
+        <h3 className="text-sm font-semibold text-amber-950 mb-2 tracking-wide">
+          Starting Gear
+        </h3>
+        <ul className="list-disc list-inside text-xs text-stone-900 space-y-1">
+          {entry.gear.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
 const FAQSection = ({ items }) => (
   <section className="max-w-6xl mx-auto px-4 pb-16">
     <div className="rounded-2xl border border-amber-200 bg-white/80 px-6 py-8 shadow-sm">
@@ -558,6 +1092,105 @@ const Footer = () => (
   </footer>
 );
 
+const FAQSection = ({ items }) => (
+  <section className="max-w-6xl mx-auto px-4 pb-16">
+    <div className="rounded-2xl border border-amber-200 bg-white/80 px-6 py-8 shadow-sm">
+      <h2 className="text-2xl font-semibold text-amber-950 mb-6">FAQ</h2>
+      <div className="grid gap-6 md:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.question} className="space-y-2">
+            <h3 className="text-sm font-semibold text-amber-900">
+              {item.question}
+            </h3>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              {item.answer}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const SEOContentSection = () => (
+  <section className="max-w-6xl mx-auto px-4 pb-16">
+    <div className="rounded-2xl border border-amber-200 bg-white/80 px-6 py-8 shadow-sm space-y-8 text-sm text-amber-700 leading-relaxed">
+      <div className="space-y-3">
+        <h2 className="text-2xl font-semibold text-amber-950">
+          What this D&amp;D character generator creates
+        </h2>
+        <p>
+          This generator builds full 5e-style character sheets with names,
+          races, classes, levels, and ability scores so you can jump straight
+          into play prep. It includes modifiers, hit points, proficiency bonus,
+          initiative, passive perception, and a simple speed value based on race
+          family.
+        </p>
+        <p>
+          You can lock in race, class, gender, and level, then roll again to
+          see new characters while keeping those choices. Each result also
+          comes with randomized starting gear so you have a ready-to-use
+          adventurer kit.
+        </p>
+        <p>
+          Export tools let you copy or download the same stats shown on screen,
+          including ability scores, modifiers, HP, proficiency bonus, and gear,
+          so your generated characters are easy to reuse in your prep notes.
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-semibold text-amber-950">
+          How stats are generated
+        </h2>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Each ability score rolls 4d6 and drops the lowest die.</li>
+          <li>Racial bonuses are applied using the generator&apos;s rules.</li>
+          <li>ASI boosts apply at levels 4, 8, 12, 16, and 19.</li>
+          <li>Ability scores cap at 20 after bonuses and ASIs.</li>
+        </ul>
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-2xl font-semibold text-amber-950">
+          How HP and proficiency work
+        </h2>
+        <p>
+          Hit points use max hit die at level 1, then average per level
+          afterward, plus the Constitution modifier. Proficiency bonus follows
+          standard 5e scaling by level. Derived stats use initiative from the
+          DEX modifier, passive perception as 10 + WIS modifier, and a basic
+          speed map (25 for dwarf/halfling/gnome families, otherwise 30).
+        </p>
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer className="border-t border-amber-200 bg-amber-50/80">
+    <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="text-sm text-amber-700">
+        © 2024 Generatorrr. Roll responsibly.
+      </div>
+      <div className="flex flex-wrap gap-4 text-sm font-medium text-amber-900">
+        <a href="/about" className="hover:text-amber-700">
+          About
+        </a>
+        <a href="/resources" className="hover:text-amber-700">
+          Resources
+        </a>
+        <a href="/sitemap.xml" className="hover:text-amber-700">
+          Sitemap
+        </a>
+        <a href="/privacy" className="hover:text-amber-700">
+          Privacy
+        </a>
+      </div>
+    </div>
+  </footer>
+);
+
 // ====== MAIN APP COMPONENT ======
 
 export default function App() {
@@ -571,10 +1204,15 @@ export default function App() {
   const [selectedGender, setSelectedGender] = useState("Any");
   const [selectedRace, setSelectedRace] = useState("Any Race");
   const [selectedClass, setSelectedClass] = useState("Any Class");
+  const [selectedLevel, setSelectedLevel] = useState("Random");
   const [selectedRegion, setSelectedRegion] = useState("Any Region");
 
   const [generatedNames, setGeneratedNames] = useState([]);
   const [savedNames, setSavedNames] = useState([]);
+  const [activeEntryId, setActiveEntryId] = useState(null);
+  const [openPicker, setOpenPicker] = useState(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [copiedState, setCopiedState] = useState(null);
   const [openPicker, setOpenPicker] = useState(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -583,6 +1221,62 @@ export default function App() {
   const [surnameNatural, setSurnameNatural] = useState([]);
   const [surnameElemental, setSurnameElemental] = useState([]);
   const [surnameNoble, setSurnameNoble] = useState([]);
+  const [gearMartial, setGearMartial] = useState([]);
+  const [gearCaster, setGearCaster] = useState([]);
+  const [gearStealth, setGearStealth] = useState([]);
+  const [gearDivine, setGearDivine] = useState([]);
+  const [gearNature, setGearNature] = useState([]);
+  const [gearTrinkets, setGearTrinkets] = useState([]);
+
+  const anyLoading = loadingNames || loadingRandomData;
+
+  const raceSlugMap = useMemo(
+    () => new Map(RACES.map((race) => [slugify(race), race])),
+    []
+  );
+  const classSlugMap = useMemo(
+    () => new Map(CLASSES.map((clazz) => [slugify(clazz), clazz])),
+    []
+  );
+
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+        setOpenPicker(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    const raceIndex = segments.indexOf("race");
+    const classIndex = segments.indexOf("class");
+
+    if (raceIndex !== -1 && segments[raceIndex + 1]) {
+      const race = raceSlugMap.get(segments[raceIndex + 1]);
+      if (race) setSelectedRace(race);
+    }
+
+    if (classIndex !== -1 && segments[classIndex + 1]) {
+      const clazz = classSlugMap.get(segments[classIndex + 1]);
+      if (clazz) setSelectedClass(clazz);
+    }
+  }, [raceSlugMap, classSlugMap]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const nextPath = buildGeneratorPath(selectedRace, selectedClass);
+    if (window.location.pathname !== nextPath) {
+      window.history.replaceState({}, "", nextPath);
+    }
+  }, [selectedRace, selectedClass]);
 
   const anyLoading = loadingNames || loadingRandomData;
 
@@ -667,6 +1361,19 @@ export default function App() {
     const loadRandomData = async () => {
       setLoadingRandomData(true);
       try {
+        const [
+          sPre,
+          sSuf,
+          sNat,
+          sElem,
+          sNob,
+          gMartial,
+          gCaster,
+          gStealth,
+          gDivine,
+          gNature,
+          gTrinkets
+        ] = await Promise.all([
         const [sPre, sSuf, sNat, sElem, sNob] = await Promise.all([
           loadTextLines("/random/surnames/prefixes.txt"),
           loadTextLines("/random/surnames/suffixes.txt"),
@@ -680,6 +1387,12 @@ export default function App() {
         setSurnameNatural(sNat);
         setSurnameElemental(sElem);
         setSurnameNoble(sNob);
+        setGearMartial(gMartial);
+        setGearCaster(gCaster);
+        setGearStealth(gStealth);
+        setGearDivine(gDivine);
+        setGearNature(gNature);
+        setGearTrinkets(gTrinkets);
       } finally {
         setLoadingRandomData(false);
       }
@@ -726,6 +1439,8 @@ export default function App() {
     const firstName = getUniqueFirstName();
     if (!firstName) return null;
 
+    const { race, clazz, level, gender } = resolveOptions();
+    const alignment = randItem(ALIGNMENTS);
     const { race, clazz, gender } = resolveOptions();
     const hometown = randomHometown();
     const surname = generateSurname(
@@ -744,10 +1459,39 @@ export default function App() {
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+    const fullName = `${firstName} ${surname}`;
+    const baseAbilities = generateBaseAbilities();
+    const racialAbilities = applyRacialBonuses(baseAbilities, race);
+    const finalAbilities = applyASI(racialAbilities, clazz, level);
+    const mods = Object.fromEntries(
+      Object.entries(finalAbilities).map(([k, v]) => [k, abilityMod(v)])
+    );
+    const hp = calculateHP(clazz, level, mods.CON);
+    const proficiencyBonus = getProficiencyBonus(level);
+    const gear = generateGear(clazz, {
+      martial: gearMartial,
+      caster: gearCaster,
+      stealth: gearStealth,
+      divine: gearDivine,
+      nature: gearNature,
+      trinkets: gearTrinkets
+    });
+
     return {
       id,
       firstName,
       surname,
+      full: fullName,
+      race,
+      clazz,
+      level,
+      gender,
+      alignment,
+      abilities: finalAbilities,
+      mods,
+      hp,
+      proficiencyBonus,
+      gear,
       full: `${firstName} ${surname}`,
       race,
       clazz,
@@ -767,6 +1511,23 @@ export default function App() {
         const entry = createNameEntry();
         if (!entry) break;
         next.push(entry);
+      }
+      if (next.length) {
+        setGeneratedNames(next);
+        setActiveEntryId(next[0].id);
+      }
+      setBusy(false);
+    }, 200);
+  };
+
+  const handleCopy = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (copyError) {
+      console.warn("Clipboard copy failed", copyError);
+    }
+  };
+
       }
       if (next.length) {
         setGeneratedNames(next);
@@ -794,6 +1555,9 @@ export default function App() {
   };
 
   const handleRerollSurname = (entryId) => {
+    setGeneratedNames((prev) => {
+      let updatedEntry = null;
+      const next = prev.map((entry) => {
     setGeneratedNames((prev) =>
       prev.map((entry) => {
         if (entry.id !== entryId) return entry;
@@ -807,11 +1571,112 @@ export default function App() {
             surnameNoble
           }
         );
+        updatedEntry = {
         return {
           ...entry,
           surname,
           full: `${entry.firstName} ${surname}`
         };
+        return updatedEntry;
+      });
+
+      if (updatedEntry) {
+        setSavedNames((saved) =>
+          saved.map((entry) =>
+            entry.id === updatedEntry.id ? updatedEntry : entry
+          )
+        );
+      }
+
+      return next;
+    });
+  };
+
+  const getExportData = (entry) => {
+    const derived = getDerivedStats(entry);
+    return {
+      name: entry.full,
+      level: entry.level,
+      race: entry.race,
+      class: entry.clazz,
+      gender: entry.gender,
+      alignment: entry.alignment,
+      region: entry.region,
+      hometown: entry.hometown,
+      abilities: entry.abilities,
+      modifiers: entry.mods,
+      hp: derived.hp,
+      proficiencyBonus: derived.proficiencyBonus,
+      initiative: derived.initiative,
+      passivePerception: derived.passivePerception,
+      speed: derived.speed,
+      spellcasting: derived.spellcasting,
+      gear: entry.gear
+    };
+  };
+
+  const buildTextExport = (entry) => {
+    const derived = getDerivedStats(entry);
+    const spellBlock = derived.spellcasting
+      ? [
+          `Spell Save DC (${derived.spellcasting.ability}): ${derived.spellcasting.saveDc}`,
+          `Spell Attack Bonus (${derived.spellcasting.ability}): ${formatMod(
+            derived.spellcasting.attackBonus
+          )}`
+        ]
+      : [];
+
+    return [
+      `${entry.full}`,
+      `Level ${entry.level} ${entry.race} ${entry.clazz}`,
+      `Gender: ${entry.gender}`,
+      `Alignment: ${entry.alignment}`,
+      `Region: ${entry.region}`,
+      `Hometown: ${entry.hometown}`,
+      "",
+      "Ability Scores",
+      ...Object.entries(entry.abilities).map(
+        ([stat, value]) => `${stat}: ${value} (${formatMod(entry.mods[stat])})`
+      ),
+      "",
+      "Derived Stats",
+      `HP: ${derived.hp}`,
+      `Proficiency Bonus: ${formatMod(derived.proficiencyBonus)}`,
+      `Initiative: ${formatMod(derived.initiative)}`,
+      `Passive Perception: ${derived.passivePerception}`,
+      `Speed: ${derived.speed} ft.`,
+      ...spellBlock,
+      "",
+      "Starting Gear",
+      ...entry.gear.map((item) => `- ${item}`)
+    ].join("\n");
+  };
+
+  const handleCopyExport = async (entry, type) => {
+    try {
+      const payload =
+        type === "json"
+          ? JSON.stringify(getExportData(entry), null, 2)
+          : buildTextExport(entry);
+      await navigator.clipboard.writeText(payload);
+      setCopiedState(type);
+      setTimeout(() => setCopiedState(null), 2000);
+    } catch (copyError) {
+      console.warn("Clipboard copy failed", copyError);
+    }
+  };
+
+  const handleDownloadText = (entry) => {
+    const content = buildTextExport(entry);
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${slugify(entry.full) || "character"}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
       })
     );
   };
@@ -841,6 +1706,54 @@ export default function App() {
       ? `${window.location.origin}${window.location.pathname}`
       : "";
 
+  const activeEntry = generatedNames.find((entry) => entry.id === activeEntryId);
+  const derivedStats = activeEntry ? getDerivedStats(activeEntry) : null;
+  const abilitySummary = activeEntry
+    ? Object.entries(activeEntry.abilities)
+        .map(
+          ([stat, value]) =>
+            `${stat} ${value} (${formatMod(activeEntry.mods[stat])})`
+        )
+        .join(", ")
+    : "";
+
+  const baseDescription =
+    "Generate D&D 5e characters with names, race, class, level, ability scores (4d6 drop lowest), racial bonuses, ASI at 4/8/12/16/19, modifiers, HP (max at level 1 + average per level + CON mod), proficiency bonus (standard 5e scaling), initiative (DEX), passive perception (10 + WIS), basic speed mapping, and starting gear.";
+
+  const seoDescription = activeEntry
+    ? `${activeEntry.full} — Level ${activeEntry.level} ${activeEntry.race} ${activeEntry.clazz}. Ability scores: ${abilitySummary}. HP ${derivedStats.hp}, proficiency ${formatMod(derivedStats.proficiencyBonus)}. Stats use 4d6 drop lowest, racial bonuses, ASI at 4/8/12/16/19, HP max at level 1 + average per level + CON mod, proficiency 5e scaling, initiative = DEX mod, passive perception = 10 + WIS, and basic speed mapping.`
+    : baseDescription;
+
+  const softwareJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "D&D Character Generator",
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    description: baseDescription,
+    url: canonicalUrl
+  };
+
+  const webPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: "D&D Character Generator (5e) – Stats, Gear, Level, Race & Class",
+    description: baseDescription,
+    url: canonicalUrl
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
   const softwareJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -899,6 +1812,40 @@ export default function App() {
       className="min-h-screen flex flex-col bg-gradient-to-b from-amber-50 via-amber-100/70 to-amber-200 text-stone-900"
       style={{ fontFamily: '"Crimson Pro", system-ui, -apple-system, serif' }}
     >
+      <Helmet>
+        <title>
+          D&amp;D Character Generator (5e) – Stats, Gear, Level, Race &amp;
+          Class
+        </title>
+        <meta name="description" content={seoDescription} />
+        <meta name="robots" content="index,follow" />
+        {canonicalUrl ? <link rel="canonical" href={canonicalUrl} /> : null}
+        <meta
+          property="og:title"
+          content="D&D Character Generator (5e) – Stats, Gear, Level, Race & Class"
+        />
+        <meta property="og:description" content={seoDescription} />
+        {canonicalUrl ? (
+          <meta property="og:url" content={canonicalUrl} />
+        ) : null}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Generatorrr" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="D&D Character Generator (5e) – Stats, Gear, Level, Race & Class"
+        />
+        <meta name="twitter:description" content={seoDescription} />
+        <script type="application/ld+json">
+          {JSON.stringify(softwareJsonLd)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(webPageJsonLd)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(faqJsonLd)}
+        </script>
+      </Helmet>
       <header className="sticky top-0 z-40 border-b border-amber-200 bg-amber-50/95 backdrop-blur shadow-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Logo />
@@ -925,6 +1872,16 @@ export default function App() {
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-amber-600">
+                Character Generator
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold text-amber-950">
+                Build a D&amp;D character in seconds.
+              </h1>
+              <p className="mt-2 text-sm text-amber-700 max-w-2xl">
+                Roll full 5e-style characters with names, race, class, level,
+                ability scores, modifiers, HP, proficiency, initiative, and
+                starting gear. Stats use 4d6 drop lowest, apply racial bonuses,
+                and ASI boosts at levels 4, 8, 12, 16, and 19.
                 Name Generator
               </p>
               <h1 className="text-3xl md:text-4xl font-semibold text-amber-950">
@@ -947,6 +1904,80 @@ export default function App() {
               </span>
             </div>
           </div>
+
+          <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 shadow-sm">
+            {error && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex flex-col gap-4 md:flex-row md:flex-wrap">
+                <PickerDropdown
+                  label="Classes"
+                  items={CLASSES}
+                  selectedItem={selectedClass}
+                  isOpen={openPicker === "class"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "class" ? null : "class"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedClass(value);
+                    setOpenPicker(null);
+                  }}
+                />
+                <PickerDropdown
+                  label="Races"
+                  items={RACES}
+                  selectedItem={selectedRace}
+                  isOpen={openPicker === "race"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "race" ? null : "race"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedRace(value);
+                    setOpenPicker(null);
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+                    Gender
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {GENDERS.map((gender) => (
+                      <button
+                        key={gender}
+                        type="button"
+                        onClick={() => setSelectedGender(gender)}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                          selectedGender === gender
+                            ? "border-amber-500 bg-amber-200 text-amber-900"
+                            : "border-amber-200 bg-white/70 text-amber-700 hover:bg-amber-100"
+                        }`}
+                      >
+                        {gender}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+                    Level
+                  </span>
+                  <select
+                    value={selectedLevel}
+                    onChange={(e) => setSelectedLevel(e.target.value)}
+                    className="rounded-xl border border-amber-200 bg-white/80 px-3 py-2 text-xs font-semibold text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  >
+                    <option value="Random">Random (1–20)</option>
+                    {Array.from({ length: 20 }).map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1}
+                      </option>
 
           <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 shadow-sm">
             {error && (
@@ -1055,10 +2086,15 @@ export default function App() {
                 >
                   Generate x10
                 </button>
+                <p className="text-[11px] text-amber-700">
+                  Stats roll 4d6 drop lowest. Gear is randomized each time you
+                  generate.
+                </p>
               </div>
             </div>
           </div>
 
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
               <div className="flex items-center justify-between">
@@ -1080,6 +2116,8 @@ export default function App() {
                       key={entry.id}
                       entry={entry}
                       isSaved={savedNames.some((item) => item.id === entry.id)}
+                      isActive={entry.id === activeEntryId}
+                      onSelect={setActiveEntryId}
                       onCopy={handleCopy}
                       onSaveToggle={handleToggleSave}
                       onRerollSurname={handleRerollSurname}
@@ -1089,6 +2127,75 @@ export default function App() {
               </div>
             </section>
 
+            <aside className="space-y-6">
+              <CharacterSheet
+                entry={activeEntry}
+                derivedStats={derivedStats}
+                copiedState={copiedState}
+                onCopyText={(entry) => handleCopyExport(entry, "text")}
+                onCopyJson={(entry) => handleCopyExport(entry, "json")}
+                onDownloadText={handleDownloadText}
+              />
+
+              <div className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-amber-950">
+                    Saved names
+                  </h2>
+                  <span className="text-xs text-amber-600">
+                    {savedNames.length} saved
+                  </span>
+                </div>
+                <div className="mt-4 space-y-3">
+                  {savedNames.length === 0 ? (
+                    <p className="text-sm text-amber-700">
+                      Save a name to collect your favorites here.
+                    </p>
+                  ) : (
+                    savedNames.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 px-3 py-2"
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-amber-900">
+                            {entry.full}
+                          </p>
+                          <p className="text-[11px] text-amber-600">
+                            Level {entry.level} · {entry.race} · {entry.clazz}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSave(entry)}
+                          className="text-xs text-amber-700 hover:text-amber-900"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="mt-5 flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleExport("txt")}
+                    disabled={!savedNames.length}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Export TXT
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleExport("csv")}
+                    disabled={!savedNames.length}
+                    className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Export CSV
+                  </button>
+                </div>
             <aside className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-amber-950">
@@ -1152,6 +2259,7 @@ export default function App() {
           </div>
         </section>
 
+        <SEOContentSection />
         <FAQSection items={FAQ_ITEMS} />
       </main>
 

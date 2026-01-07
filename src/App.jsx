@@ -144,41 +144,13 @@ const FALLBACK_SURNAME_NOBLE = [
   "of Blackstone Keep"
 ];
 
-// Hit dice by class
-const HIT_DICE = {
-  Barbarian: 12,
-  Fighter: 10,
-  Paladin: 10,
-  Ranger: 10,
-  "Blood Hunter": 10,
-  Bard: 8,
-  Cleric: 8,
-  Druid: 8,
-  Monk: 8,
-  Rogue: 8,
-  Warlock: 8,
-  Artificer: 8,
-  Sorcerer: 6,
-  Wizard: 6
-};
-
-// Primary stat by class
-const PRIMARY_STAT = {
-  Barbarian: "STR",
-  Bard: "CHA",
-  Cleric: "WIS",
-  Druid: "WIS",
-  Fighter: "STR",
-  Monk: "DEX",
-  Paladin: "STR",
-  Ranger: "DEX",
-  Rogue: "DEX",
-  Sorcerer: "CHA",
-  Warlock: "CHA",
-  Wizard: "INT",
-  Artificer: "INT",
-  "Blood Hunter": "DEX"
-};
+const NAV_LINKS = [
+  { label: "Name Generator", href: "/name-generator" },
+  { label: "Character Generator", href: "/character-generator" },
+  { label: "Dice Roller", href: "/dice-roller" },
+  { label: "NPC Generator", href: "/npc-generator" },
+  { label: "DM Tools", href: "/dm-tools" }
+];
 
 const SPELLCASTING_ABILITY = {
   Artificer: "INT",
@@ -263,6 +235,28 @@ const FALLBACK_GEAR = {
     "engraved locket"
   ]
 };
+const FAQ_ITEMS = [
+  {
+    question: "Can I lock a race or class and still generate new names?",
+    answer:
+      "Yes. Pick a race or class in the dropdowns and the generator will keep those settings when you roll again."
+  },
+  {
+    question: "What does Generate x10 do?",
+    answer:
+      "It produces ten unique names at once so you can scan a batch and save favorites quickly."
+  },
+  {
+    question: "Do you reuse names?",
+    answer:
+      "We avoid repeats by tracking used first names in local storage until you clear them."
+  },
+  {
+    question: "How do saved names work?",
+    answer:
+      "Saved names stay in your session list so you can export them to text or CSV later."
+  }
+];
 
 const NAV_LINKS = [
   { label: "Name Generator", href: "/name-generator" },
@@ -317,100 +311,43 @@ const randItem = (arr) =>
     ? arr[Math.floor(Math.random() * arr.length)]
     : undefined;
 
-const abilityMod = (score) => Math.floor((score - 10) / 2);
+const slugify = (value) =>
+  value
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "")
+  .trim();
 
-const formatMod = (mod) => (mod >= 0 ? `+${mod}` : `${mod}`);
-
-const getProficiencyBonus = (level) => {
-  if (level >= 17) return 6;
-  if (level >= 13) return 5;
-  if (level >= 9) return 4;
-  if (level >= 5) return 3;
-  return 2;
-};
-
-const rollD = (sides) => Math.floor(Math.random() * sides) + 1;
-
-const roll4d6DropLowest = () => {
-  const rolls = [rollD(6), rollD(6), rollD(6), rollD(6)].sort((a, b) => a - b);
-  return rolls.slice(1).reduce((a, b) => a + b, 0);
-};
-
-const generateBaseAbilities = () => ({
-  STR: roll4d6DropLowest(),
-  DEX: roll4d6DropLowest(),
-  CON: roll4d6DropLowest(),
-  INT: roll4d6DropLowest(),
-  WIS: roll4d6DropLowest(),
-  CHA: roll4d6DropLowest()
-});
-
-const normalizeRaceForBonuses = (race) => {
-  if (!race) return "";
-  if (race.includes("Human")) return "Human";
-  if (race.startsWith("Elf")) return "Elf";
-  if (race.startsWith("Dwarf")) return "Dwarf";
-  if (race.startsWith("Halfling")) return "Halfling";
-  if (race.startsWith("Gnome")) return "Gnome";
-  if (race.includes("Half-Elf")) return "Half-Elf";
-  if (race.includes("Half-Orc")) return "Half-Orc";
-  if (race.includes("Dragonborn")) return "Dragonborn";
-  if (race.includes("Tiefling")) return "Tiefling";
-  if (race.includes("Genasi")) return "Genasi";
-  return race;
-};
-
-const applyRacialBonuses = (abilities, raceRaw) => {
-  const a = { ...abilities };
-  const race = normalizeRaceForBonuses(raceRaw);
-
-  switch (race) {
-    case "Human":
-      Object.keys(a).forEach((k) => (a[k] += 1));
-      break;
-    case "Elf":
-      a.DEX += 2;
-      break;
-    case "Half-Elf":
-      a.CHA += 2;
-      a.DEX += 1;
-      a.WIS += 1;
-      break;
-    case "Dwarf":
-      a.CON += 2;
-      break;
-    case "Halfling":
-      a.DEX += 2;
-      break;
-    case "Tiefling":
-      a.CHA += 2;
-      a.INT += 1;
-      break;
-    case "Dragonborn":
-      a.STR += 2;
-      a.CHA += 1;
-      break;
-    case "Half-Orc":
-      a.STR += 2;
-      a.CON += 1;
-      break;
-    case "Gnome":
-      a.INT += 2;
-      break;
-    case "Aasimar":
-      a.CHA += 2;
-      break;
-    case "Genasi":
-      a.CON += 2;
-      break;
-    case "Goliath":
-      a.STR += 2;
-      a.CON += 1;
-      break;
-    default:
-      break;
+const upsertMetaTag = (attr, value, content) => {
+  let tag = document.querySelector(`meta[${attr}="${value}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute(attr, value);
+    document.head.appendChild(tag);
   }
-  return a;
+  tag.setAttribute("content", content);
+};
+
+const upsertLinkTag = (rel, href) => {
+  let link = document.querySelector(`link[rel="${rel}"]`);
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", rel);
+    document.head.appendChild(link);
+  }
+  link.setAttribute("href", href);
+};
+
+const upsertJsonLd = (id, data) => {
+  let script = document.getElementById(id);
+  if (!script) {
+    script = document.createElement("script");
+    script.id = id;
+    script.type = "application/ld+json";
+    document.head.appendChild(script);
+  }
+  script.textContent = JSON.stringify(data);
 };
 
 const applyASI = (abilities, clazz, level) => {
@@ -434,20 +371,25 @@ const applyASI = (abilities, clazz, level) => {
         result[highestOther] += 2;
       }
     }
+const buildGeneratorPath = (race, clazz) => {
+  const parts = ["/name-generator"];
+  if (race && race !== "Any Race") {
+    parts.push("race", slugify(race));
   }
-
-  return result;
+  if (clazz && clazz !== "Any Class") {
+    parts.push("class", slugify(clazz));
+  }
+  return parts.join("/");
 };
 
-const calculateHP = (clazz, level, conMod) => {
-  const hitDie = HIT_DICE[clazz] || 8;
-  const firstLevel = hitDie + conMod;
-  if (level <= 1) return Math.max(1, firstLevel);
-
-  const avgPerLevel = Math.floor(hitDie / 2) + 1 + conMod;
-  const total = firstLevel + (level - 1) * avgPerLevel;
-  return Math.max(1, total);
-};
+const initialTag = (value) =>
+  value
+    .replace(/\(.*\)/g, "")
+    .split(" ")
+    .map((chunk) => chunk[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
 const speedFromRace = (race) => {
   if (!race) return 30;
@@ -863,6 +805,17 @@ const NameRow = ({
           event.stopPropagation();
           onCopy(entry.full);
         }}
+  <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-white/80 px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between">
+    <div>
+      <p className="text-base font-semibold text-amber-950">{entry.full}</p>
+      <p className="text-xs text-amber-700">
+        {entry.race} · {entry.clazz} · {entry.gender}
+      </p>
+    </div>
+    <div className="flex flex-wrap gap-2">
+      <button
+        type="button"
+        onClick={() => onCopy(entry.full)}
         className="inline-flex items-center gap-1 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
       >
         <Copy className="h-3.5 w-3.5" />
@@ -875,6 +828,7 @@ const NameRow = ({
           event.stopPropagation();
           onRerollSurname(entry.id);
         }}
+        onClick={() => onRerollSurname(entry.id)}
         className="inline-flex items-center gap-1 rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-100"
       >
         <RotateCcw className="h-3.5 w-3.5" />
@@ -889,6 +843,7 @@ const NameRow = ({
           event.stopPropagation();
           onSaveToggle(entry);
         }}
+        onClick={() => onSaveToggle(entry)}
         className={`inline-flex items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-semibold ${
           isSaved
             ? "border-amber-500 bg-amber-200 text-amber-900"
@@ -1091,6 +1046,51 @@ const CharacterSheet = ({
     </div>
   );
 };
+const FAQSection = ({ items }) => (
+  <section className="max-w-6xl mx-auto px-4 pb-16">
+    <div className="rounded-2xl border border-amber-200 bg-white/80 px-6 py-8 shadow-sm">
+      <h2 className="text-2xl font-semibold text-amber-950 mb-6">
+        Frequently asked questions
+      </h2>
+      <div className="grid gap-6 md:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.question} className="space-y-2">
+            <h3 className="text-sm font-semibold text-amber-900">
+              {item.question}
+            </h3>
+            <p className="text-sm text-amber-700 leading-relaxed">
+              {item.answer}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = () => (
+  <footer className="border-t border-amber-200 bg-amber-50/80">
+    <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <div className="text-sm text-amber-700">
+        © 2024 Generatorrr. Roll responsibly.
+      </div>
+      <div className="flex flex-wrap gap-4 text-sm font-medium text-amber-900">
+        <a href="/about" className="hover:text-amber-700">
+          About
+        </a>
+        <a href="/resources" className="hover:text-amber-700">
+          Resources
+        </a>
+        <a href="/sitemap.xml" className="hover:text-amber-700">
+          Sitemap
+        </a>
+        <a href="/privacy" className="hover:text-amber-700">
+          Privacy
+        </a>
+      </div>
+    </div>
+  </footer>
+);
 
 const FAQSection = ({ items }) => (
   <section className="max-w-6xl mx-auto px-4 pb-16">
@@ -1213,6 +1213,8 @@ export default function App() {
   const [openPicker, setOpenPicker] = useState(null);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [copiedState, setCopiedState] = useState(null);
+  const [openPicker, setOpenPicker] = useState(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const [surnamePrefixes, setSurnamePrefixes] = useState([]);
   const [surnameSuffixes, setSurnameSuffixes] = useState([]);
@@ -1225,6 +1227,56 @@ export default function App() {
   const [gearDivine, setGearDivine] = useState([]);
   const [gearNature, setGearNature] = useState([]);
   const [gearTrinkets, setGearTrinkets] = useState([]);
+
+  const anyLoading = loadingNames || loadingRandomData;
+
+  const raceSlugMap = useMemo(
+    () => new Map(RACES.map((race) => [slugify(race), race])),
+    []
+  );
+  const classSlugMap = useMemo(
+    () => new Map(CLASSES.map((clazz) => [slugify(clazz), clazz])),
+    []
+  );
+
+  useEffect(() => {
+    const handleKey = (event) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+        setOpenPicker(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    const raceIndex = segments.indexOf("race");
+    const classIndex = segments.indexOf("class");
+
+    if (raceIndex !== -1 && segments[raceIndex + 1]) {
+      const race = raceSlugMap.get(segments[raceIndex + 1]);
+      if (race) setSelectedRace(race);
+    }
+
+    if (classIndex !== -1 && segments[classIndex + 1]) {
+      const clazz = classSlugMap.get(segments[classIndex + 1]);
+      if (clazz) setSelectedClass(clazz);
+    }
+  }, [raceSlugMap, classSlugMap]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const nextPath = buildGeneratorPath(selectedRace, selectedClass);
+    if (window.location.pathname !== nextPath) {
+      window.history.replaceState({}, "", nextPath);
+    }
+  }, [selectedRace, selectedClass]);
 
   const anyLoading = loadingNames || loadingRandomData;
 
@@ -1322,17 +1374,12 @@ export default function App() {
           gNature,
           gTrinkets
         ] = await Promise.all([
+        const [sPre, sSuf, sNat, sElem, sNob] = await Promise.all([
           loadTextLines("/random/surnames/prefixes.txt"),
           loadTextLines("/random/surnames/suffixes.txt"),
           loadTextLines("/random/surnames/natural.txt"),
           loadTextLines("/random/surnames/elemental.txt"),
-          loadTextLines("/random/surnames/noble.txt"),
-          loadTextLines("/random/gear/martial.txt"),
-          loadTextLines("/random/gear/caster.txt"),
-          loadTextLines("/random/gear/stealth.txt"),
-          loadTextLines("/random/gear/divine.txt"),
-          loadTextLines("/random/gear/nature.txt"),
-          loadTextLines("/random/gear/trinkets.txt")
+          loadTextLines("/random/surnames/noble.txt")
         ]);
 
         setSurnamePrefixes(sPre);
@@ -1382,14 +1429,10 @@ export default function App() {
       selectedClass === "Any Class"
         ? randItem(CLASSES.slice(1))
         : selectedClass;
-    const level =
-      selectedLevel === "Random"
-        ? Math.floor(Math.random() * 20) + 1
-        : parseInt(selectedLevel, 10);
     const gender =
       selectedGender === "Any" ? randItem(GENDERS.slice(1)) : selectedGender;
 
-    return { race, clazz, level, gender };
+    return { race, clazz, gender };
   };
 
   const createNameEntry = () => {
@@ -1398,6 +1441,7 @@ export default function App() {
 
     const { race, clazz, level, gender } = resolveOptions();
     const alignment = randItem(ALIGNMENTS);
+    const { race, clazz, gender } = resolveOptions();
     const hometown = randomHometown();
     const surname = generateSurname(
       { race, clazz, hometown },
@@ -1448,6 +1492,10 @@ export default function App() {
       hp,
       proficiencyBonus,
       gear,
+      full: `${firstName} ${surname}`,
+      race,
+      clazz,
+      gender,
       hometown,
       region: selectedRegion
     };
@@ -1480,6 +1528,22 @@ export default function App() {
     }
   };
 
+      }
+      if (next.length) {
+        setGeneratedNames(next);
+      }
+      setBusy(false);
+    }, 200);
+  };
+
+  const handleCopy = async (value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+    } catch (copyError) {
+      console.warn("Clipboard copy failed", copyError);
+    }
+  };
+
   const handleToggleSave = (entry) => {
     setSavedNames((prev) => {
       const exists = prev.some((item) => item.id === entry.id);
@@ -1494,6 +1558,8 @@ export default function App() {
     setGeneratedNames((prev) => {
       let updatedEntry = null;
       const next = prev.map((entry) => {
+    setGeneratedNames((prev) =>
+      prev.map((entry) => {
         if (entry.id !== entryId) return entry;
         const surname = generateSurname(
           { race: entry.race, clazz: entry.clazz, hometown: entry.hometown },
@@ -1506,6 +1572,7 @@ export default function App() {
           }
         );
         updatedEntry = {
+        return {
           ...entry,
           surname,
           full: `${entry.firstName} ${surname}`
@@ -1610,6 +1677,8 @@ export default function App() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+      })
+    );
   };
 
   const handleExport = (format) => {
@@ -1685,6 +1754,58 @@ export default function App() {
       }
     }))
   };
+  const softwareJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "D&D Name Generator",
+    applicationCategory: "GameApplication",
+    operatingSystem: "Web",
+    description:
+      "Generate Dungeons & Dragons character names by class, race, and gender with instant copy and save tools.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD"
+    }
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+
+  useEffect(() => {
+    document.title = "D&D Name Generator | Generatorrr";
+
+    const description =
+      "Generate Dungeons & Dragons character names by class, race, and gender. Save favorites, copy instantly, and export your list.";
+
+    upsertMetaTag("name", "description", description);
+    upsertMetaTag("property", "og:title", "D&D Name Generator");
+    upsertMetaTag(
+      "property",
+      "og:description",
+      "Pick a class, race, and gender, then generate D&D names instantly with save and export tools."
+    );
+    upsertMetaTag("property", "og:type", "website");
+    upsertMetaTag("name", "twitter:card", "summary_large_image");
+
+    if (canonicalUrl) {
+      upsertLinkTag("canonical", canonicalUrl);
+      upsertMetaTag("property", "og:url", canonicalUrl);
+    }
+
+    upsertJsonLd("jsonld-software", softwareJsonLd);
+    upsertJsonLd("jsonld-faq", faqJsonLd);
+  }, [canonicalUrl, softwareJsonLd, faqJsonLd]);
 
   return (
     <div
@@ -1761,6 +1882,15 @@ export default function App() {
                 ability scores, modifiers, HP, proficiency, initiative, and
                 starting gear. Stats use 4d6 drop lowest, apply racial bonuses,
                 and ASI boosts at levels 4, 8, 12, 16, and 19.
+                Name Generator
+              </p>
+              <h1 className="text-3xl md:text-4xl font-semibold text-amber-950">
+                Build a hero name in seconds.
+              </h1>
+              <p className="mt-2 text-sm text-amber-700 max-w-2xl">
+                Pick a class or race, roll a batch of names, and keep the ones
+                you love. Your selections update the URL for fast sharing and
+                SEO-friendly browsing.
               </p>
             </div>
             <div className="flex items-center gap-2 text-xs text-amber-700">
@@ -1848,8 +1978,64 @@ export default function App() {
                       <option key={i + 1} value={i + 1}>
                         {i + 1}
                       </option>
+
+          <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/80 px-4 py-5 shadow-sm">
+            {error && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div className="flex flex-col gap-4 md:flex-row md:flex-wrap">
+                <PickerDropdown
+                  label="Classes"
+                  items={CLASSES}
+                  selectedItem={selectedClass}
+                  isOpen={openPicker === "class"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "class" ? null : "class"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedClass(value);
+                    setOpenPicker(null);
+                  }}
+                />
+                <PickerDropdown
+                  label="Races"
+                  items={RACES}
+                  selectedItem={selectedRace}
+                  isOpen={openPicker === "race"}
+                  onToggle={() =>
+                    setOpenPicker((prev) => (prev === "race" ? null : "race"))
+                  }
+                  onSelect={(value) => {
+                    setSelectedRace(value);
+                    setOpenPicker(null);
+                  }}
+                />
+              </div>
+
+              <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs uppercase tracking-[0.2em] text-amber-600">
+                    Gender
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {GENDERS.map((gender) => (
+                      <button
+                        key={gender}
+                        type="button"
+                        onClick={() => setSelectedGender(gender)}
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                          selectedGender === gender
+                            ? "border-amber-500 bg-amber-200 text-amber-900"
+                            : "border-amber-200 bg-white/70 text-amber-700 hover:bg-amber-100"
+                        }`}
+                      >
+                        {gender}
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
@@ -1909,6 +2095,7 @@ export default function App() {
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <section className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-amber-950">
@@ -2009,6 +2196,64 @@ export default function App() {
                     Export CSV
                   </button>
                 </div>
+            <aside className="rounded-2xl border border-amber-200 bg-white/80 px-5 py-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-amber-950">
+                  Saved names
+                </h2>
+                <span className="text-xs text-amber-600">
+                  {savedNames.length} saved
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {savedNames.length === 0 ? (
+                  <p className="text-sm text-amber-700">
+                    Save a name to collect your favorites here.
+                  </p>
+                ) : (
+                  savedNames.map((entry) => (
+                    <div
+                      key={entry.id}
+                      className="flex items-center justify-between gap-3 rounded-lg border border-amber-200 px-3 py-2"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-amber-900">
+                          {entry.full}
+                        </p>
+                        <p className="text-[11px] text-amber-600">
+                          {entry.race} · {entry.clazz}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSave(entry)}
+                        className="text-xs text-amber-700 hover:text-amber-900"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="mt-5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleExport("txt")}
+                  disabled={!savedNames.length}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export TXT
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport("csv")}
+                  disabled={!savedNames.length}
+                  className="inline-flex items-center justify-center gap-2 rounded-lg border border-amber-200 px-3 py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100 disabled:opacity-40"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Export CSV
+                </button>
               </div>
             </aside>
           </div>

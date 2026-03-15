@@ -3,14 +3,265 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-  href="https://fonts.googleapis.com/css2?family=Eagle+Lake&family=Crimson+Pro:wght@300;400;600&display=swap"
-  rel="stylesheet"
-/>
-    <title>Dungeons and Dragons Name Generator</title>
+    <title>D&D Name Generator | HTML + Source Lists</title>
+    <meta
+      name="description"
+      content="HTML-first D&D name generator that loads from the same source name and surname text lists."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --card: #111827;
+        --line: #334155;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #22d3ee;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 55%);
+        color: var(--text);
+      }
+      .wrap { width: min(1100px, 92vw); margin: 2rem auto; }
+      .card {
+        background: rgba(17, 24, 39, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 1rem;
+      }
+      h1, h2 { margin: 0 0 .75rem; }
+      .muted { color: var(--muted); }
+      .grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      select, button {
+        width: 100%;
+        padding: .65rem .7rem;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #0b1222;
+        color: var(--text);
+      }
+      button { cursor: pointer; }
+      button.primary { background: #0f2940; border-color: #164e63; }
+      button:hover { border-color: var(--accent); }
+      .actions { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: .8rem; }
+      #output { margin-top: 1rem; display: grid; gap: .5rem; }
+      .name-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .6rem;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #0b1222;
+        padding: .7rem .8rem;
+      }
+      .name-row small { display: block; color: var(--muted); margin-top: .2rem; }
+      .saved-list li { margin-bottom: .3rem; }
+      .status { margin-top: .6rem; min-height: 1.2rem; color: var(--muted); }
+    </style>
   </head>
-  <body class="bg-slate-900 text-white">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+  <body>
+    <main class="wrap">
+      <section class="card">
+        <h1>D&D Name Generator</h1>
+        <p class="muted">HTML-first UI that still loads from the same source files: <code>/names-extra.txt</code> and <code>/random/surnames/*.txt</code>.</p>
+
+        <div class="grid">
+          <label>Race
+            <select id="race">
+              <option>Any Race</option><option>Human</option><option>Variant Human</option><option>Elf (High)</option><option>Elf (Wood)</option><option>Elf (Drow)</option><option>Elf (Eladrin)</option><option>Half-Elf</option><option>Dwarf (Hill)</option><option>Dwarf (Mountain)</option><option>Dwarf (Duergar)</option><option>Halfling (Lightfoot)</option><option>Halfling (Stout)</option><option>Dragonborn</option><option>Gnome (Forest)</option><option>Gnome (Rock)</option><option>Half-Orc</option><option>Tiefling</option><option>Aarakocra</option><option>Aasimar</option><option>Firbolg</option><option>Genasi (Air)</option><option>Genasi (Earth)</option><option>Genasi (Fire)</option><option>Genasi (Water)</option><option>Goliath</option><option>Kenku</option><option>Kobold</option><option>Lizardfolk</option><option>Orc</option><option>Tabaxi</option><option>Triton</option><option>Tortle</option><option>Yuan-ti Pureblood</option>
+            </select>
+          </label>
+
+          <label>Class
+            <select id="clazz">
+              <option>Any Class</option><option>Artificer</option><option>Barbarian</option><option>Bard</option><option>Blood Hunter</option><option>Cleric</option><option>Druid</option><option>Fighter</option><option>Monk</option><option>Paladin</option><option>Ranger</option><option>Rogue</option><option>Sorcerer</option><option>Warlock</option><option>Wizard</option>
+            </select>
+          </label>
+
+          <label>Gender
+            <select id="gender">
+              <option>Any</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Other</option>
+            </select>
+          </label>
+
+          <label>Region
+            <select id="region">
+              <option>Any Region</option><option>Forgotten Realms</option><option>Eberron</option><option>Ravenloft</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="gen1" class="primary">Generate 1</button>
+          <button id="gen10">Generate 10</button>
+          <button id="clearUsed">Clear Used Names</button>
+          <button id="exportTxt">Export Saved TXT</button>
+        </div>
+        <p id="status" class="status"></p>
+        <div id="output"></div>
+      </section>
+
+      <section class="card" style="margin-top: 1rem;">
+        <h2>Saved Names</h2>
+        <ul id="saved" class="saved-list"></ul>
+      </section>
+    </main>
+
+    <script>
+      const RACES = Array.from(document.querySelector('#race').options).map(o => o.textContent);
+      const CLASSES = Array.from(document.querySelector('#clazz').options).map(o => o.textContent);
+      const GENDERS = Array.from(document.querySelector('#gender').options).map(o => o.textContent);
+
+      const state = {
+        namesPool: [],
+        surnames: { prefixes: [], suffixes: [], natural: [], elemental: [], noble: [] },
+        saved: JSON.parse(localStorage.getItem('savedNames') || '[]')
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const randItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const status = (msg) => { $('status').textContent = msg; };
+
+      async function loadTextLines(path) {
+        const res = await fetch(path);
+        if (!res.ok) return [];
+        return (await res.text()).split('\n').map(x => x.trim()).filter(Boolean);
+      }
+
+      async function loadData() {
+        status('Loading source files...');
+        const allNames = await loadTextLines('/names-extra.txt');
+        const used = JSON.parse(localStorage.getItem('usedNames') || '[]');
+        state.namesPool = allNames.filter(n => !used.includes(n));
+
+        const [prefixes, suffixes, natural, elemental, noble] = await Promise.all([
+          loadTextLines('/random/surnames/prefixes.txt'),
+          loadTextLines('/random/surnames/suffixes.txt'),
+          loadTextLines('/random/surnames/natural.txt'),
+          loadTextLines('/random/surnames/elemental.txt'),
+          loadTextLines('/random/surnames/noble.txt')
+        ]);
+
+        state.surnames = { prefixes, suffixes, natural, elemental, noble };
+        status(`Ready. ${state.namesPool.length} unused first names loaded.`);
+        renderSaved();
+      }
+
+      function resolveOpt(selected, options, anyLabel) {
+        return selected === anyLabel ? randItem(options.slice(1)) : selected;
+      }
+
+      function nextFirstName() {
+        if (!state.namesPool.length) return null;
+        const i = Math.floor(Math.random() * state.namesPool.length);
+        const first = state.namesPool.splice(i, 1)[0];
+        const used = JSON.parse(localStorage.getItem('usedNames') || '[]');
+        used.push(first);
+        localStorage.setItem('usedNames', JSON.stringify(used));
+        return first;
+      }
+
+      function buildSurname() {
+        const p = state.surnames.prefixes, s = state.surnames.suffixes;
+        const n = state.surnames.natural, e = state.surnames.elemental, b = state.surnames.noble;
+        const method = randItem(['natural', 'elemental', 'composite', 'noble']);
+        if (method === 'natural' && n.length) return randItem(n);
+        if (method === 'elemental' && e.length) return randItem(e);
+        if (method === 'noble' && b.length) {
+          const base = randItem([...(n.length ? n : ['Riverbrook']), ...(e.length ? e : ['Stormwatcher']), ...(p.length ? p : ['Shadow'])]);
+          return `${base} ${randItem(b)}`;
+        }
+        return `${randItem(p.length ? p : ['Storm'])}${randItem(s.length ? s : ['born'])}`;
+      }
+
+      function saveName(full) {
+        if (state.saved.includes(full)) return;
+        state.saved.push(full);
+        localStorage.setItem('savedNames', JSON.stringify(state.saved));
+        renderSaved();
+      }
+
+      function renderSaved() {
+        const ul = $('saved');
+        ul.innerHTML = '';
+        for (const n of state.saved) {
+          const li = document.createElement('li');
+          li.textContent = n;
+          ul.appendChild(li);
+        }
+      }
+
+      function addRow(entry) {
+        const row = document.createElement('div');
+        row.className = 'name-row';
+        row.innerHTML = `<div><strong>${entry.full}</strong><small>${entry.race} · ${entry.clazz} · ${entry.gender} · ${entry.region}</small></div>`;
+        const btns = document.createElement('div');
+        btns.style.display = 'flex'; btns.style.gap = '.4rem';
+
+        const copy = document.createElement('button');
+        copy.textContent = 'Copy';
+        copy.onclick = async () => {
+          try { await navigator.clipboard.writeText(entry.full); status(`Copied: ${entry.full}`); }
+          catch { status('Clipboard unavailable in this browser context.'); }
+        };
+
+        const save = document.createElement('button');
+        save.textContent = 'Save';
+        save.onclick = () => saveName(entry.full);
+
+        btns.append(copy, save);
+        row.appendChild(btns);
+        $('output').prepend(row);
+      }
+
+      function generate(count) {
+        const race = $('race').value;
+        const clazz = $('clazz').value;
+        const gender = $('gender').value;
+        const region = $('region').value;
+
+        let made = 0;
+        for (let i = 0; i < count; i++) {
+          const first = nextFirstName();
+          if (!first) {
+            status('Out of unused first names. Click "Clear Used Names" to reuse the source list.');
+            break;
+          }
+          const entry = {
+            race: resolveOpt(race, RACES, 'Any Race'),
+            clazz: resolveOpt(clazz, CLASSES, 'Any Class'),
+            gender: resolveOpt(gender, GENDERS, 'Any'),
+            region,
+            full: `${first} ${buildSurname()}`
+          };
+          addRow(entry);
+          made++;
+        }
+        if (made) status(`Generated ${made} name${made > 1 ? 's' : ''}. ${state.namesPool.length} first names remain unused.`);
+      }
+
+      $('gen1').addEventListener('click', () => generate(1));
+      $('gen10').addEventListener('click', () => generate(10));
+      $('clearUsed').addEventListener('click', async () => {
+        localStorage.removeItem('usedNames');
+        await loadData();
+        status('Cleared used names and reloaded from /names-extra.txt.');
+      });
+      $('exportTxt').addEventListener('click', () => {
+        const blob = new Blob([state.saved.join('\n')], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'saved-names.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      loadData().catch(() => status('Failed to load one or more source files.'));
+    </script>
   </body>
 </html>
